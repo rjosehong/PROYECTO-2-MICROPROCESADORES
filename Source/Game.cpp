@@ -35,6 +35,8 @@ void Begin(const sf::Window& window)
         }
     }
 
+    
+
     music.openFromFile("./resource/sounds/music.ogg");
     music.setLoop(true);
     music.setVolume(50);
@@ -61,6 +63,8 @@ void Update(float deltaTime)
 
 void Render (Renderer& renderer)
 {
+
+    renderer.Draw (Resources::textures["background.png"], camera.position, camera.GetViewSize());
     map.Draw(renderer);
     mario.Draw(renderer);
 

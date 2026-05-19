@@ -21,6 +21,8 @@ void Mario::Begin()
         AnimFrame(0.0f, Resources::textures["run1 (2).png"]),
     });
 
+    jumpSound.setBuffer(Resources::sounds["jump.wav"]);
+
     b2BodyDef bodyDef{};
     bodyDef.type = b2_dynamicBody;
     bodyDef.position.Set(position.x, position.y);
@@ -77,6 +79,8 @@ void Mario::Update(float deltaTime)
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && onGround)
     {
         velocity.y = -jumpVelocity;
+        jumpSound.play();
+        jumpSound.setVolume(30);
     }
 
     textureToDraw = runAnimation.GetTexture();

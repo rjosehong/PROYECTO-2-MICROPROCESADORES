@@ -67,7 +67,7 @@ int main()
                 }
             }
         }
-        window.clear(sf::Color(20, 20, 20));
+        window.clear();
 
         if (state == GameState::MENU)
         {

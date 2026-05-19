@@ -4,6 +4,7 @@
 #include <box2d/b2_body.h>
 #include "Physics.h"
 #include "Animation.h"
+#include <SFML/Audio.hpp>
 class Mario
     : public ContactListener
 {
@@ -20,6 +21,7 @@ public:
 private:
     Animation runAnimation{};
     sf::Texture textureToDraw{};
+    sf::Sound jumpSound{};
 
     b2Body* body{};
     size_t onGround = 0;
