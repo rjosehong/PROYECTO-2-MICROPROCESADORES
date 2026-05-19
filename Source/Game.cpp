@@ -35,7 +35,7 @@ void Begin(const sf::Window& window)
         }
     }
 
-    music.openFromFile("music.ogg");
+    music.openFromFile("./resource/sounds/music.ogg");
     music.setLoop(true);
     music.setVolume(50);
 
