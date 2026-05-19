@@ -10,7 +10,7 @@
 constexpr float PI = 22.0f / 7.0f;
 
 const float movementSpeed = 7.0f;
-const float jumpVelocity = 10.0f;
+const float jumpVelocity = 11.0f;
 
 void Mario::Begin()
 {

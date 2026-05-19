@@ -56,7 +56,7 @@ sf::Vector2f Map::CreateFromImage(const sf::Image& image)
             else if(color == sf::Color::Red){
                     marioPosition =sf::Vector2f(cellSize * x + cellSize / 2.0f,
                          cellSize * y + cellSize / 2.0f);
-                }
+            }
         }
     }
 
