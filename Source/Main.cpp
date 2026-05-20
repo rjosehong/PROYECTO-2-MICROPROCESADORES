@@ -6,13 +6,16 @@
 #include "Camera.h"
 #include "Renderer.h"
 #include "Menu.h"
+#include "Instructions.h"
 
 std::mutex gameMutex;
 
 enum class GameState
 {
     MENU,
-    PLAYING
+    PLAYING,
+    INSTRUCTIONS,
+    SCORES
 };
 
 int main()
@@ -22,6 +25,7 @@ int main()
     sf::Clock deltaClock;
     Renderer renderer(window);
     MainMenu menu(window.getSize().x, window.getSize().y);
+    Instructions instructions(window.getSize().x, window.getSize().y);
     GameState state = GameState::MENU;
     Begin(window);
 
@@ -52,6 +56,12 @@ int main()
                         if (selected == 0) {
                             state = GameState::PLAYING;
                         }
+                        if (selected == 1) {
+                            state = GameState::INSTRUCTIONS;
+                        }
+                        if (selected == 2) {
+                            state = GameState::SCORES;
+                        }
                         if (selected == 3) {
                             window.close();
                         }
@@ -66,6 +76,23 @@ int main()
                     state = GameState::MENU;
                 }
             }
+            else if (state == GameState::INSTRUCTIONS)
+            {
+                if (event.type == sf::Event::KeyPressed &&
+                    event.key.code == sf::Keyboard::Escape) {
+
+                    state = GameState::MENU;
+                }
+            }
+            else if (state == GameState::SCORES)
+            {
+                if (event.type == sf::Event::KeyPressed &&
+                    event.key.code == sf::Keyboard::Escape) {
+
+                    state = GameState::MENU;
+                }
+            }
+
         }
         window.clear();
 
@@ -87,6 +114,11 @@ int main()
                 std::lock_guard<std::mutex> lock(gameMutex);
                 Render(renderer);
             }
+        }
+        else if (state == GameState::INSTRUCTIONS)
+        {
+            window.setView(window.getDefaultView());
+            instructions.draw(window);
         }
         window.display();
     }
