@@ -40,14 +40,14 @@ MainMenu::MainMenu(float width, float height) {
     //Instrucciones
     mainMenu[1].setFont(font);
     mainMenu[1].setFillColor(sf::Color::White);
-    mainMenu[1].setString("Instrucciones");
+    mainMenu[1].setString("Instructions");
     mainMenu[1].setCharacterSize(70);
     mainMenu[1].setPosition(400,500);
 
     //Pausa
     mainMenu[2].setFont(font);
     mainMenu[2].setFillColor(sf::Color::White);
-    mainMenu[2].setString("Pausa");
+    mainMenu[2].setString("Scores");
     mainMenu[2].setCharacterSize(70);
     mainMenu[2].setPosition(400,600);
 
