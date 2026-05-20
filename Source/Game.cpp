@@ -5,10 +5,13 @@
 #include <filesystem>
 #include "Physics.h"
 #include <SFML/Audio.hpp>
+#include "Object.h"
+#include "Coin.h"
 
 Map map(1.0f);
 Camera camera (20.0f);
 Mario mario;
+std::vector<Object*> objects{};
 
 sf::Music music{};
 
@@ -43,10 +46,14 @@ void Begin(const sf::Window& window)
 
     Physics::Init();
 
-    sf::Image image;
+    sf::Image image{};
     image.loadFromFile("./resource/textures/map.png");
-    mario.position = map.CreateFromImage(image);
+    mario.position = map.CreateFromImage(image, objects);
     mario.Begin();
+    for(auto& object : objects)
+    {
+        object->Begin();
+    }
 
     music.play();
     
@@ -59,6 +66,10 @@ void Update(float deltaTime)
     Physics::Update(deltaTime);
     mario.Update(deltaTime);
     camera.position = mario.position;
+    for(auto& object : objects)
+    {
+        object->Update(deltaTime);
+    }
 }
 
 void Render (Renderer& renderer)
@@ -67,6 +78,9 @@ void Render (Renderer& renderer)
     renderer.Draw (Resources::textures["background.png"], camera.position, camera.GetViewSize());
     map.Draw(renderer);
     mario.Draw(renderer);
-
+    for(auto& object : objects)
+    {
+        object->Render(renderer);
+    }
     Physics::DebugDraw(renderer);
 }
