@@ -47,7 +47,7 @@ void Begin(const sf::Window& window)
     Physics::Init();
 
     sf::Image image{};
-    image.loadFromFile("./resource/textures/map.png");
+    image.loadFromFile("./resource/textures/map (1).png");
     mario.position = map.CreateFromImage(image, objects);
     mario.Begin();
     for(auto& object : objects)
