@@ -1,8 +1,23 @@
 #include "Coin.h"
 #include "Resources.h"
+#include "Physics.h"
+#include <box2d/b2_fixture.h>
+#include <box2d/b2_polygon_shape.h>
+#include <box2d/b2_world.h>
+#include "Object.h"
 
+Coin::~Coin()
+{
+    if(body)
+    {
+        Physics::world.DestroyBody(body);
+        body = nullptr;
+    }
+}
 void Coin::Begin()
 {
+    tag = "coin";
+
     animation =Animation(1.4f,
     {
         AnimFrame(1.3f, Resources::textures["coin14.png"]),
@@ -20,6 +35,23 @@ void Coin::Begin()
         AnimFrame(0.1f, Resources::textures["coin2.png"]),
         AnimFrame(0.0f, Resources::textures["coin1.png"]),
     });
+
+b2BodyDef bodyDef{};
+bodyDef.position.Set(position.x, position.y);
+body = Physics::world.CreateBody(&bodyDef);
+b2PolygonShape shape{};
+shape.SetAsBox(0.4f, 0.4f);
+
+FixtureData* fixtureData = new FixtureData();
+fixtureData->type = FixtureDataType::Object;
+fixtureData->object = this;
+
+b2FixtureDef fixtureDef{};
+fixtureDef.userData.pointer = (uintptr_t)fixtureData;
+fixtureDef.isSensor = true;
+fixtureDef.density = 0.0f;
+fixtureDef.shape = &shape;
+body->CreateFixture(&fixtureDef);
 }
 void Coin::Update(float deltaTime)
 {

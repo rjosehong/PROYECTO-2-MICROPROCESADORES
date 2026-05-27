@@ -10,11 +10,13 @@
 
 Map map(1.0f);
 Camera camera (20.0f);
-Mario mario;
+Mario mario{};
 std::vector<Object*> objects{};
 
 sf::Music music{};
 
+sf::Font font{};
+sf::Text coinsText("Monedas", font);
 
 void Begin(const sf::Window& window)
 {
@@ -42,13 +44,20 @@ void Begin(const sf::Window& window)
 
     music.openFromFile("./resource/sounds/music.ogg");
     music.setLoop(true);
-    music.setVolume(50);
+    music.setVolume(35);
+
+    font.loadFromFile("./resource/fonts/SuperMarioBros.ttf");
+    coinsText.setFillColor(sf::Color::White);
+    coinsText.setOutlineColor(sf::Color::Black);
+    coinsText.setOutlineThickness(1.0f);
+    coinsText.setScale(0.1f,0.1f);
 
     Physics::Init();
 
     sf::Image image{};
-    image.loadFromFile("./resource/textures/map (1).png");
+    image.loadFromFile("./resource/textures/map.png");
     mario.position = map.CreateFromImage(image, objects);
+
     mario.Begin();
     for(auto& object : objects)
     {
@@ -64,11 +73,27 @@ void Begin(const sf::Window& window)
 void Update(float deltaTime)
 {
     Physics::Update(deltaTime);
+
     mario.Update(deltaTime);
+
     camera.position = mario.position;
+
     for(auto& object : objects)
     {
         object->Update(deltaTime);
+    }
+
+    for(auto it = objects.begin(); it != objects.end(); )
+    {
+        if((*it)->destroy)
+        {
+            delete *it;
+            it = objects.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
     }
 }
 
@@ -78,9 +103,27 @@ void Render (Renderer& renderer)
     renderer.Draw (Resources::textures["background.png"], camera.position, camera.GetViewSize());
     map.Draw(renderer);
     mario.Draw(renderer);
+
     for(auto& object : objects)
     {
         object->Render(renderer);
     }
     Physics::DebugDraw(renderer);
 }
+
+void RenderUI(Renderer& renderer)
+{
+    coinsText.setPosition(-camera.GetViewSize() / 2.0f + sf::Vector2f(2.0f, 1.0f));
+    coinsText.setString("Coins: " + std::to_string(mario.GetCoins()));
+    renderer.target.draw(coinsText);
+}
+
+void DeleteObject(Object* object)
+{
+    const auto& it = std::find(objects.begin(), objects.end(), object);
+    if(it != objects.end())
+    {
+        delete *it;
+        objects.erase(it);
+    }
+} 

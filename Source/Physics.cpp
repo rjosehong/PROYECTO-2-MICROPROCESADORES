@@ -4,6 +4,9 @@
 #include <box2d/b2_world_callbacks.h>
 #include <box2d/b2_contact.h>
 #include <SFML/Graphics.hpp>
+#include "Renderer.h"
+#include "Object.h"
+#include "Mario.h"
 
 b2World Physics::world{b2Vec2(0.0f, 9.8f)};
 MyDebugDraw* Physics::debugDraw{};
@@ -18,7 +21,7 @@ public:
     virtual void DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) override
     {
         sf::ConvexShape shape(vertexCount);
-        for(size_t i = 0; i < vertexCount; i++)
+        for(int i = 0; i < vertexCount; i++)
         {
             shape.setPoint(i, sf::Vector2f(vertices[i].x, vertices[i].y));
             
@@ -32,7 +35,7 @@ public:
     virtual void DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color) override
     {
         sf::ConvexShape shape(vertexCount);
-        for(size_t i = 0; i < vertexCount; i++)
+        for(int i = 0; i < vertexCount; i++)
         {
             shape.setPoint(i, sf::Vector2f(vertices[i].x, vertices[i].y));
             
@@ -104,54 +107,59 @@ class MyGlobalContactListener :
 {
     virtual void BeginContact(b2Contact* contact) override
     {
-        ContactListener* listener = (ContactListener*)
+        FixtureData* data = (FixtureData*)
             contact->GetFixtureA()->GetUserData().pointer;
         
-        if (listener)
+        if (data && data->listener)
         {
-            listener->OnBeginContact();
+            data->listener->OnBeginContact(contact->GetFixtureA(), 
+            contact->GetFixtureB());
         }
         
 
-        listener = (ContactListener*)
+        data = (FixtureData*)
             contact->GetFixtureB()->GetUserData().pointer;
         
-        if (listener)
+        if (data && data->listener)
         {
-            listener->OnBeginContact();
+            data->listener->OnBeginContact(contact->GetFixtureB(),
+            contact->GetFixtureA());
         }
         
     }
 
     virtual void EndContact(b2Contact* contact) override
     {
-        ContactListener* listener = (ContactListener*)
+        FixtureData* data = (FixtureData*)
             contact->GetFixtureA()->GetUserData().pointer;
         
-        if (listener)
+        if (data && data->listener)
         {
-            listener->OnEndContact();
+            data->listener->OnEndContact(contact->GetFixtureA(), 
+            contact->GetFixtureB());
         }
 
-        listener = (ContactListener*)
+         data = (FixtureData*)
             contact->GetFixtureB()->GetUserData().pointer;
         
-        if (listener)
+        if (data && data->listener)
         {
-            listener->OnEndContact();
+            data->listener->OnEndContact(contact->GetFixtureB(), 
+            contact->GetFixtureA());
         }
         
     }
 };
-
+static MyGlobalContactListener contactListener;
 void Physics::Init()
 {
+    world.SetContactListener(&contactListener);
 }
+
 
 void Physics::Update(float deltaTime)
 {
     world.Step(deltaTime, 8, 3);
-    world.SetContactListener(new MyGlobalContactListener());
 }
 
 void Physics::DebugDraw(Renderer& renderer)

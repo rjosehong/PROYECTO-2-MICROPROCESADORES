@@ -1,6 +1,9 @@
 #include "Mario.h"
 #include "Resources.h"
 #include "Physics.h"
+#include "Object.h"
+#include "Game.h"
+#include <iostream>
 #include <box2d/b2_world.h>
 #include <box2d/b2_polygon_shape.h>
 #include <box2d/b2_body.h>
@@ -22,6 +25,11 @@ void Mario::Begin()
     });
 
     jumpSound.setBuffer(Resources::sounds["jump.wav"]);
+    jumpSound.setVolume(30);
+
+    fixtureData.listener = this;
+    fixtureData.mario = this;
+    fixtureData.type = FixtureDataType::Mario;
 
     b2BodyDef bodyDef{};
     bodyDef.type = b2_dynamicBody;
@@ -30,6 +38,7 @@ void Mario::Begin()
     body = Physics::world.CreateBody(&bodyDef);
 
     b2FixtureDef fixtureDef{};
+    fixtureDef.userData.pointer = (uintptr_t)&fixtureData;
     fixtureDef.density = 1.0f;
     fixtureDef.friction = 0.0f;
 
@@ -48,9 +57,8 @@ void Mario::Begin()
     body->CreateFixture(&fixtureDef);
 
     polygonShape.SetAsBox(0.4f, 0.2f, b2Vec2(0.0f, 1.0f), 0.0f);
-    fixtureDef.userData.pointer = (uintptr_t)this;
     fixtureDef.isSensor = true;
-    body->CreateFixture(&fixtureDef);
+    groundFixture = body->CreateFixture(&fixtureDef);
 
     
 }
@@ -117,15 +125,38 @@ void Mario::Draw(Renderer& renderer)
         sf::Vector2f(facingLeft ? -1.0f : 1.0f, 2.0f), angle);
 }
 
-void Mario::OnBeginContact()
+void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
 {
-    onGround++;
+    FixtureData* data = (FixtureData*)other->GetUserData().pointer;
+
+    if(!data)
+    {
+        return;
+    }
+
+    if(groundFixture == self && data->type == FixtureDataType::MapTile)
+    {
+        onGround++;
+    }
+     else if (data->type == FixtureDataType::Object && data->object->tag == "coin")
+    {
+        data->object->destroy = true;
+        std::cout << "coins = " << ++coins << "\n";
+    }
 }
 
-void Mario::OnEndContact()
+void Mario::OnEndContact(b2Fixture* self, b2Fixture* other)
 {
-    if(onGround > 0)
-    {
+    FixtureData* data = (FixtureData*)other->GetUserData().pointer;
+
+    if(groundFixture == self && data->type == FixtureDataType::MapTile && onGround>0)
+    {    
         onGround--;
     }
+   
+}
+
+size_t Mario::GetCoins()
+{
+    return coins;
 }

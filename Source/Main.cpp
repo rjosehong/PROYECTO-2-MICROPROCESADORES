@@ -120,6 +120,8 @@ int main()
             window.setView(window.getDefaultView());
             instructions.draw(window);
         }
+        window.setView(camera.GetUIView());
+        RenderUI(renderer);
         window.display();
     }
     return 0;
