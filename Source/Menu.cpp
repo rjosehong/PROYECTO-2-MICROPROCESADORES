@@ -17,16 +17,16 @@ MainMenu::MainMenu(float width, float height) {
     textTitle.setFont(font);
     textTitle.setFillColor(sf::Color::White);
     textTitle.setString("Mario");
-    textTitle.setCharacterSize(100);
-    textTitle.setPosition(400,100);
+    textTitle.setCharacterSize(70);
+    textTitle.setPosition(420,60);
     textTitle.setOutlineColor(sf::Color::Black);
     textTitle.setOutlineThickness(5);
 
     textTitle2.setFont(font);
     textTitle2.setFillColor(sf::Color::White);
     textTitle2.setString("Bros");
-    textTitle2.setCharacterSize(100);
-    textTitle2.setPosition(400,200);
+    textTitle2.setCharacterSize(70);
+    textTitle2.setPosition(420,140);
     textTitle2.setOutlineColor(sf::Color::Black);
     textTitle2.setOutlineThickness(5);
 
@@ -34,29 +34,36 @@ MainMenu::MainMenu(float width, float height) {
     mainMenu[0].setFont(font);
     mainMenu[0].setFillColor(sf::Color::White);
     mainMenu[0].setString("Play");
-    mainMenu[0].setCharacterSize(70);
-    mainMenu[0].setPosition(400,400);
+    mainMenu[0].setCharacterSize(55);
+    mainMenu[0].setPosition(420,300);
     
     //Instrucciones
     mainMenu[1].setFont(font);
     mainMenu[1].setFillColor(sf::Color::White);
     mainMenu[1].setString("Instructions");
-    mainMenu[1].setCharacterSize(70);
-    mainMenu[1].setPosition(400,500);
+    mainMenu[1].setCharacterSize(55);
+    mainMenu[1].setPosition(420,380);
 
     //Pausa
     mainMenu[2].setFont(font);
     mainMenu[2].setFillColor(sf::Color::White);
     mainMenu[2].setString("Scores");
-    mainMenu[2].setCharacterSize(70);
-    mainMenu[2].setPosition(400,600);
+    mainMenu[2].setCharacterSize(55);
+    mainMenu[2].setPosition(420,460);
 
-    //Exit
+    //Restart
     mainMenu[3].setFont(font);
     mainMenu[3].setFillColor(sf::Color::White);
-    mainMenu[3].setString("Exit");
-    mainMenu[3].setCharacterSize(70);
-    mainMenu[3].setPosition(400,700);
+    mainMenu[3].setString("Restart");
+    mainMenu[3].setCharacterSize(55);
+    mainMenu[3].setPosition(420,540);
+
+    //Exit
+    mainMenu[4].setFont(font);
+    mainMenu[4].setFillColor(sf::Color::White);
+    mainMenu[4].setString("Exit");
+    mainMenu[4].setCharacterSize(55);
+    mainMenu[4].setPosition(420,620);
 
     MainMenuSelected = -1;
 }

@@ -4,7 +4,7 @@
 using namespace std;
 using namespace sf;
 
-#define max_main_menu 4
+#define max_main_menu 5
 class MainMenu {
     public:
         MainMenu(float width, float height);

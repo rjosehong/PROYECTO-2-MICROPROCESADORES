@@ -13,3 +13,6 @@ void Render(Renderer& renderer);
 void RenderUI(Renderer& renderer);
 
 void DeleteObject(Object* object);
+
+void RestartGame(const sf::Window& window);
+bool IsGameOver();

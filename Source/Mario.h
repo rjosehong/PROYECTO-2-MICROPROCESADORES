@@ -12,6 +12,12 @@ class Mario
     : public ContactListener
 {
 public: 
+
+    int GetLives();
+    void LoseLife();
+    bool IsDead();
+    void Reset();
+
     void Begin();
     void Update(float deltaTime);
     void Draw(Renderer& renderer);
@@ -20,6 +26,13 @@ public:
     virtual void OnEndContact(b2Fixture* self, b2Fixture* other) override;
 
     size_t GetCoins();
+
+    int lives = 3;
+    bool dead = false;
+    bool pendingRespawn = false;
+
+    float invincibleTimer = 0.0f;
+    bool invincible = false;
 
     sf::Vector2f position{};
     float angle{};

@@ -7,6 +7,7 @@
 #include "Renderer.h"
 #include "Menu.h"
 #include "Instructions.h"
+#include "Mario.h"
 
 std::mutex gameMutex;
 
@@ -63,6 +64,11 @@ int main()
                             state = GameState::SCORES;
                         }
                         if (selected == 3) {
+                            RestartGame(window);
+                            state = GameState::PLAYING;
+                        }
+
+                        if (selected == 4) {
                             window.close();
                         }
                     }
@@ -70,10 +76,20 @@ int main()
             }
             else if (state == GameState::PLAYING)
             {
-                if (event.type == sf::Event::KeyPressed &&
-                    event.key.code == sf::Keyboard::Escape) {
+                if (event.type == sf::Event::KeyPressed)
+                {
+                    if (event.key.code == sf::Keyboard::Escape && !IsGameOver())
+                    {
+                        state = GameState::MENU;
+                    }
 
-                    state = GameState::MENU;
+                    if(IsGameOver())
+                    {
+                        if(event.key.code == sf::Keyboard::Enter)
+                        {
+                            RestartGame(window);
+                        }
+                    }
                 }
             }
             else if (state == GameState::INSTRUCTIONS)
@@ -120,8 +136,12 @@ int main()
             window.setView(window.getDefaultView());
             instructions.draw(window);
         }
-        window.setView(camera.GetUIView());
-        RenderUI(renderer);
+        if(state == GameState::PLAYING)
+        {
+            window.setView(camera.GetUIView());
+            RenderUI(renderer);
+        }
+
         window.display();
     }
     return 0;

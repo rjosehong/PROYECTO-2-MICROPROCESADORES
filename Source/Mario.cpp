@@ -66,6 +66,28 @@ void Mario::Begin()
 
 void Mario::Update(float deltaTime)
 {
+    if(dead)
+    {
+        return;
+    }
+
+    if(pendingRespawn)
+    {
+        body->SetTransform(b2Vec2(3.0f, 3.0f), 0.0f);
+        body->SetLinearVelocity(b2Vec2_zero);
+
+        pendingRespawn = false;
+    }
+    if(invincible)
+    {
+    invincibleTimer -= deltaTime;
+
+    if(invincibleTimer <= 0.0f)
+    {
+        invincible = false;
+    }
+    }
+
     float move = movementSpeed;
 
     runAnimation.Update(deltaTime);
@@ -144,13 +166,28 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
         data->object->destroy = true;
         std::cout << "coins = " << ++coins << "\n";
     }
-    else if (groundFixture == self && data->type == FixtureDataType::Object &&
-        data->object->tag == "enemy")
+    else if (data->type == FixtureDataType::Object &&
+    data->object->tag == "enemy")
     {
         Enemy* enemy = dynamic_cast<Enemy*>(data->object);
+
         if(enemy)
         {
-            enemy->Die();
+            // si fue con el sensor de pies -> matar enemigo
+            if(self == groundFixture)
+            {
+                enemy->Die();
+
+                // rebote clásico Mario
+                b2Vec2 velocity = body->GetLinearVelocity();
+                velocity.y = -7.0f;
+                body->SetLinearVelocity(velocity);
+            }
+            else
+            {
+                // daño a Mario
+                LoseLife();
+            }
         }
     }
 }
@@ -169,4 +206,63 @@ void Mario::OnEndContact(b2Fixture* self, b2Fixture* other)
 size_t Mario::GetCoins()
 {
     return coins;
+}
+int Mario::GetLives()
+{
+    return lives;
+}
+
+bool Mario::IsDead()
+{
+    return dead;
+}
+
+void Mario::LoseLife()
+{
+    if(invincible)
+    {
+        return;
+    }
+    if(dead)
+    {
+        return;
+    }
+
+    lives--;
+    invincible = true;
+    invincibleTimer = 2.0f;
+
+    std::cout << "Lives: " << lives << "\n";
+
+    pendingRespawn = true;
+
+    if(lives <= 0)
+    {
+        dead = true;
+    }
+}
+
+void Mario::Reset()
+{
+    if(body)
+    {
+        Physics::world.DestroyBody(body);
+        body = nullptr;
+    }
+
+    coins = 0;
+    lives = 3;
+
+    dead = false;
+
+    pendingRespawn = false;
+
+    invincible = false;
+    invincibleTimer = 0.0f;
+
+    onGround = 0;
+
+    facingLeft = false;
+
+    Begin();
 }
