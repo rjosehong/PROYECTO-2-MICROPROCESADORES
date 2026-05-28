@@ -8,12 +8,8 @@
 
 Coin::~Coin()
 {
-    if(body)
-    {
-        Physics::world.DestroyBody(body);
-        body = nullptr;
-    }
 }
+
 void Coin::Begin()
 {
     tag = "coin";
@@ -60,4 +56,13 @@ void Coin::Update(float deltaTime)
 void Coin::Render(Renderer& renderer)
 {
     renderer.Draw(animation.GetTexture(), position, sf::Vector2f(0.8f, 0.8f));
+}
+
+void Coin::DestroyPhysics()
+{
+    if(body)
+    {
+        Physics::world.DestroyBody(body);
+        body = nullptr;
+    }
 }

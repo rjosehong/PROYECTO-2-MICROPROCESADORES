@@ -7,6 +7,7 @@
 #include <SFML/Audio.hpp>
 #include "Object.h"
 #include "Coin.h"
+#include "Enemy.h"
 
 Map map(1.0f);
 Camera camera (20.0f);
@@ -84,17 +85,34 @@ void Update(float deltaTime)
     }
 
     for(auto it = objects.begin(); it != objects.end(); )
+{
+    Object* object = *it;
+
+    if(object->destroy)
     {
-        if((*it)->destroy)
+        if(!object->physicsDestroyed)
         {
-            delete *it;
-            it = objects.erase(it);
+            if(Coin* coin = dynamic_cast<Coin*>(object))
+            {
+                coin->DestroyPhysics();
+            }
+
+            if(Enemy* enemy = dynamic_cast<Enemy*>(object))
+            {
+                enemy->DestroyPhysics();
+            }
+
+            object->physicsDestroyed = true;
         }
-        else
-        {
-            ++it;
-        }
+
+        delete object;
+        it = objects.erase(it);
     }
+    else
+    {
+        ++it;
+    }
+}
 }
 
 void Render (Renderer& renderer)

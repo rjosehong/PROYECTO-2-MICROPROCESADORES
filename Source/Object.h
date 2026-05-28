@@ -13,4 +13,5 @@ public:
     float angle {};
 
     bool destroy = false;
+    bool physicsDestroyed = false;
 };

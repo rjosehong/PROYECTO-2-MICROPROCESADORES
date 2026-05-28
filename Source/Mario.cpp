@@ -3,6 +3,7 @@
 #include "Physics.h"
 #include "Object.h"
 #include "Game.h"
+#include "Enemy.h"
 #include <iostream>
 #include <box2d/b2_world.h>
 #include <box2d/b2_polygon_shape.h>
@@ -138,10 +139,19 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
     {
         onGround++;
     }
-     else if (data->type == FixtureDataType::Object && data->object->tag == "coin")
+    else if (data->type == FixtureDataType::Object && data->object->tag == "coin")
     {
         data->object->destroy = true;
         std::cout << "coins = " << ++coins << "\n";
+    }
+    else if (groundFixture == self && data->type == FixtureDataType::Object &&
+        data->object->tag == "enemy")
+    {
+        Enemy* enemy = dynamic_cast<Enemy*>(data->object);
+        if(enemy)
+        {
+            enemy->Die();
+        }
     }
 }
 
