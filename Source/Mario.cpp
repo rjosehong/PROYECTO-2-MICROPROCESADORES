@@ -71,9 +71,22 @@ void Mario::Update(float deltaTime)
         return;
     }
 
+    if(pendingWin)
+    {
+        won = true;
+        pendingWin = false;
+
+        std::cout << "YOU WIN\n";
+
+        return;
+    }
+
     if(pendingRespawn)
     {
-        body->SetTransform(b2Vec2(3.0f, 3.0f), 0.0f);
+        body->SetTransform(
+            b2Vec2(spawnPosition.x, spawnPosition.y),
+            0.0f
+        );
         body->SetLinearVelocity(b2Vec2_zero);
 
         pendingRespawn = false;
@@ -198,6 +211,16 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
             }
         }
     }
+
+   else if (data->type == FixtureDataType::Object &&
+         data->object->tag == "flag")
+    {
+        // evitar múltiples triggers
+        if(!pendingWin && !won)
+        {
+            pendingWin = true;
+        }
+    }
 }
 
 void Mario::OnEndContact(b2Fixture* self, b2Fixture* other)
@@ -223,6 +246,11 @@ int Mario::GetLives()
 bool Mario::IsDead()
 {
     return dead;
+}
+
+bool Mario::HasWon()
+{
+    return won;
 }
 
 void Mario::LoseLife()
@@ -252,18 +280,16 @@ void Mario::LoseLife()
 
 void Mario::Reset()
 {
-    if(body)
-    {
-        Physics::world.DestroyBody(body);
-        body = nullptr;
-    }
-
     coins = 0;
     lives = 3;
 
     dead = false;
+    won = false;
 
-    pendingRespawn = false;
+    pendingWin = false;
+
+    // usar respawn seguro
+    pendingRespawn = true;
 
     invincible = false;
     invincibleTimer = 0.0f;
@@ -271,6 +297,4 @@ void Mario::Reset()
     onGround = 0;
 
     facingLeft = false;
-
-    Begin();
 }

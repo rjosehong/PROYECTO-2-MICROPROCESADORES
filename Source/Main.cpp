@@ -83,12 +83,13 @@ int main()
                         state = GameState::MENU;
                     }
 
-                    if(IsGameOver())
+                    if(IsGameOver() || HasPlayerWon())
                     {
                         if(event.key.code == sf::Keyboard::Enter)
                         {
                             RestartGame(window);
                         }
+                        
                     }
                 }
             }

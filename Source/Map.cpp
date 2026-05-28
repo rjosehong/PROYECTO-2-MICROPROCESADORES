@@ -8,6 +8,7 @@
 #include <box2d/b2_polygon_shape.h>
 #include "Object.h"
 #include "Coin.h"
+#include "Flag.h"
 
 Map::Map(float cellSize)
     : cellSize(cellSize), grid()
@@ -47,35 +48,75 @@ sf::Vector2f Map::CreateFromImage(const sf::Image& image, std::vector<Object*>& 
 
 
     sf::Vector2f marioPosition{};
+    sf::Color brown(185, 122, 87);
+    sf::Color orange(255, 127, 39);
+    sf::Color green(34, 177, 76);
+    sf::Color pink(239, 136, 190);
+    sf::Color gray(128, 128, 128);
+    sf::Color flagPurple(57, 16, 123);
+    sf::Color coinYellow(255, 242, 0);
+
     for(size_t x = 0; x < grid.size(); x++){
         for(size_t y = 0; y < grid[x].size(); y++)
         {
             sf::Color color = image.getPixel(x,y);
             Object* object = nullptr;
-            if(color == sf::Color::Red){
+            if(color == sf::Color::Red)
+            {
+                marioPosition = sf::Vector2f(
+                    cellSize * x + cellSize / 2.0f,
+                    cellSize * y + cellSize / 2.0f
+                );
 
-                marioPosition = sf::Vector2f(cellSize * x + cellSize / 2.0f,
-                         cellSize * y + cellSize / 2.0f);
                 continue;
             }
-            //|| color == sf::Color::Green
+
+            // bloque normal
             else if (color == sf::Color::Black)
             {
                 grid[x][y] = &Resources::textures["block.png"];
-                
-            }  
-            else if (color == sf::Color::Green)
+            }
+
+            // ladrillo
+            else if (color == brown)
             {
                 grid[x][y] = &Resources::textures["ladrillo.png"];
-                
-            }       
-            else if (color == sf::Color::Yellow)
+            }
+
+            // bloque pregunta
+            else if (color == orange)
+            {
+                grid[x][y] = &Resources::textures["bamarillo.png"];
+            }
+
+            // tubo
+            else if (color == green)
+            {
+                grid[x][y] = &Resources::textures["tubo.png"];
+            }
+
+            // castillo
+            else if (color == pink)
+            {
+                grid[x][y] = &Resources::textures["castillo.png"];
+            }
+
+            // moneda
+            else if (color == coinYellow)
             {
                 object = new Coin();
             }
-            else if (color == sf::Color::Blue)
+
+            // goomba
+            else if (color == gray)
             {
                 object = new Enemy();
+            }
+
+            // bandera
+            else if (color == flagPurple)
+            {
+                object = new Flag();
             }
             
             if(object)
@@ -87,11 +128,48 @@ sf::Vector2f Map::CreateFromImage(const sf::Image& image, std::vector<Object*>& 
             else if (grid[x][y])
             {
                 b2BodyDef bodyDef{};
-                bodyDef.position.Set(cellSize * x + cellSize / 2.0f,
-                         cellSize * y + cellSize / 2.0f);
+
+                // tamaño normal
+                float halfWidth = cellSize / 2.0f;
+                float halfHeight = cellSize / 2.0f;
+
+                // posición normal
+                float bodyX = cellSize * x + cellSize / 2.0f;
+                float bodyY = cellSize * y + cellSize / 2.0f;
+
+                // =========================
+                // TUBOS
+                // =========================
+
+                if(grid[x][y] == &Resources::textures["tubo.png"])
+                {
+                    halfWidth = 1.0f;
+                    halfHeight = 2.5f;
+
+                    bodyX = cellSize * x + 0.5f;
+                    bodyY = cellSize * y - 1.2f;
+                }
+
+                // =========================
+                // CASTILLO
+                // =========================
+
+                if(grid[x][y] == &Resources::textures["castillo.png"])
+                {
+                    halfWidth = 2.5f;
+                    halfHeight = 3.0f;
+
+                    bodyX = cellSize * x + 2.5f;
+                    bodyY = cellSize * y - 2.0f;
+                }
+
+                // aplicar posición FINAL
+                bodyDef.position.Set(bodyX, bodyY);
+
                 b2Body* body = Physics::world.CreateBody(&bodyDef);
+
                 b2PolygonShape shape{};
-                shape.SetAsBox(cellSize / 2.0f, cellSize / 2.0f);
+                shape.SetAsBox(halfWidth, halfHeight);
 
                 FixtureData* fixtureData = new FixtureData();
                 fixtureData->type = FixtureDataType::MapTile;
@@ -113,18 +191,54 @@ sf::Vector2f Map::CreateFromImage(const sf::Image& image, std::vector<Object*>& 
 void Map::Draw(Renderer& renderer)
 {
     int x = 0;
+
     for(const auto& column : grid)
     {
         int y = 0;
+
         for(const auto& cell : column)
         {
-            if (cell)
+            if(cell)
             {
-                renderer.Draw(*cell,sf::Vector2f(cellSize * x + cellSize / 2.0f,
-                    cellSize * y + cellSize / 2.0f), sf::Vector2f(cellSize, cellSize));
+                sf::Vector2f drawSize(cellSize, cellSize);
+
+                sf::Vector2f drawPosition(
+                    cellSize * x + cellSize / 2.0f,
+                    cellSize * y + cellSize / 2.0f
+                );
+
+                // =========================
+                // TUBO
+                // =========================
+
+                if(cell == &Resources::textures["tubo.png"])
+                {
+                    drawSize = sf::Vector2f(2.0f, 5.0f);
+
+                    drawPosition.y -= 1.8f;
+                }
+
+                // =========================
+                // CASTILLO
+                // =========================
+
+                if(cell == &Resources::textures["castillo.png"])
+                {
+                    drawSize = sf::Vector2f(5.0f, 5.0f);
+
+                    drawPosition.y -= 2.0f;
+                }
+
+                renderer.Draw(
+                    *cell,
+                    drawPosition,
+                    drawSize
+                );
             }
+
             y++;
         }
+
         x++;
     }
 }

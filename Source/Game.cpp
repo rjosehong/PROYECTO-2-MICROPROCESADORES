@@ -9,6 +9,7 @@
 #include "Coin.h"
 #include "Enemy.h"
 #include <box2d/b2_world.h>
+#include "Flag.h"
 
 Map map(1.0f);
 Camera camera (20.0f);
@@ -63,8 +64,9 @@ void Begin(const sf::Window& window)
     Physics::Init();
 
     sf::Image image{};
-    image.loadFromFile("./resource/textures/map.png");
+    image.loadFromFile("./resource/textures/map (1).png");
     mario.position = map.CreateFromImage(image, objects);
+    mario.spawnPosition = mario.position;
 
     mario.Begin();
     for(auto& object : objects)
@@ -80,51 +82,62 @@ void Begin(const sf::Window& window)
 
 void Update(float deltaTime)
 {
-    if(mario.IsDead())
+    bool paused = mario.IsDead() || mario.HasWon();
+
+    // física solo si no está pausado
+    if(!paused)
     {
-        return;
+        Physics::Update(deltaTime);
     }
 
-    Physics::Update(deltaTime);
-
+    // Mario SIEMPRE se actualiza
     mario.Update(deltaTime);
 
     camera.position = mario.position;
 
-    for(auto& object : objects)
+    // enemigos/objetos solo si no está pausado
+    if(!paused)
     {
-        object->Update(deltaTime);
-    }
-
-    for(auto it = objects.begin(); it != objects.end(); )
-{
-    Object* object = *it;
-
-    if(object->destroy)
-    {
-        if(!object->physicsDestroyed)
+        for(auto& object : objects)
         {
-            if(Coin* coin = dynamic_cast<Coin*>(object))
-            {
-                coin->DestroyPhysics();
-            }
-
-            if(Enemy* enemy = dynamic_cast<Enemy*>(object))
-            {
-                enemy->DestroyPhysics();
-            }
-
-            object->physicsDestroyed = true;
+            object->Update(deltaTime);
         }
+    }
 
-        delete object;
-        it = objects.erase(it);
-    }
-    else
+    // destrucción segura
+    for(auto it = objects.begin(); it != objects.end(); )
     {
-        ++it;
+        Object* object = *it;
+
+        if(object->destroy)
+        {
+            if(!object->physicsDestroyed)
+            {
+                if(Coin* coin = dynamic_cast<Coin*>(object))
+                {
+                    coin->DestroyPhysics();
+                }
+
+                if(Enemy* enemy = dynamic_cast<Enemy*>(object))
+                {
+                    enemy->DestroyPhysics();
+                }
+                if(Flag* flag = dynamic_cast<Flag*>(object))
+                {
+                    flag->DestroyPhysics();
+                }
+
+                object->physicsDestroyed = true;
+            }
+
+            delete object;
+            it = objects.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
     }
-}
 }
 
 void Render (Renderer& renderer)
@@ -163,7 +176,10 @@ void RenderUI(Renderer& renderer)
 
     renderer.target.draw(livesText);
 
+    // =========================
     // GAME OVER
+    // =========================
+
     if(mario.IsDead())
     {
         sf::Text gameOver("GAME OVER", font);
@@ -178,7 +194,7 @@ void RenderUI(Renderer& renderer)
 
         renderer.target.draw(gameOver);
 
-        sf::Text restart("Press ENTER to Restart", font);
+        sf::Text restart("PRESS ENTER TO PLAY AGAIN", font);
 
         restart.setFillColor(sf::Color::White);
         restart.setOutlineColor(sf::Color::Black);
@@ -186,7 +202,38 @@ void RenderUI(Renderer& renderer)
 
         restart.setScale(0.05f, 0.05f);
 
-        restart.setPosition(-5.0f, 1.5f);
+        restart.setPosition(-7.0f, 1.5f);
+
+        renderer.target.draw(restart);
+    }
+
+    // =========================
+    // YOU WIN
+    // =========================
+
+    if(mario.HasWon())
+    {
+        sf::Text win("YOU WIN!", font);
+
+        win.setFillColor(sf::Color::Yellow);
+        win.setOutlineColor(sf::Color::Black);
+        win.setOutlineThickness(2.0f);
+
+        win.setScale(0.14f, 0.14f);
+
+        win.setPosition(-5.0f, -2.0f);
+
+        renderer.target.draw(win);
+
+        sf::Text restart("PRESS ENTER TO RESTART", font);
+
+        restart.setFillColor(sf::Color::White);
+        restart.setOutlineColor(sf::Color::Black);
+        restart.setOutlineThickness(1.0f);
+
+        restart.setScale(0.05f, 0.05f);
+
+        restart.setPosition(-7.0f, 1.5f);
 
         renderer.target.draw(restart);
     }
@@ -219,6 +266,10 @@ void RestartGame(const sf::Window& window)
         {
             enemy->DestroyPhysics();
         }
+        if(Flag* flag = dynamic_cast<Flag*>(object))
+        {
+            flag->DestroyPhysics();
+        }
 
         delete object;
     }
@@ -231,9 +282,10 @@ void RestartGame(const sf::Window& window)
 
     sf::Image image{};
 
-    image.loadFromFile("./resource/textures/map.png");
+    image.loadFromFile("./resource/textures/map (1).png");
 
     mario.position = map.CreateFromImage(image, objects);
+    mario.spawnPosition = mario.position;
 
     // =========================
     // RESET MARIO
@@ -254,4 +306,9 @@ void RestartGame(const sf::Window& window)
 bool IsGameOver()
 {
     return mario.IsDead();
+}
+
+bool HasPlayerWon()
+{
+    return mario.HasWon();
 }

@@ -13,6 +13,7 @@ class Mario
 {
 public: 
 
+    bool HasWon();
     int GetLives();
     void LoseLife();
     bool IsDead();
@@ -29,12 +30,15 @@ public:
 
     int lives = 3;
     bool dead = false;
+    bool won = false;
+    bool pendingWin = false;
     bool pendingRespawn = false;
 
     float invincibleTimer = 0.0f;
     bool invincible = false;
 
     sf::Vector2f position{};
+    sf::Vector2f spawnPosition{};
     float angle{};
 private:
 

@@ -16,3 +16,4 @@ void DeleteObject(Object* object);
 
 void RestartGame(const sf::Window& window);
 bool IsGameOver();
+bool HasPlayerWon();
