@@ -161,11 +161,19 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
     {
         onGround++;
     }
-    else if (data->type == FixtureDataType::Object && data->object->tag == "coin")
-    {
-        data->object->destroy = true;
-        std::cout << "coins = " << ++coins << "\n";
-    }
+    else if (data->type == FixtureDataType::Object &&
+         data->object->tag == "coin")
+        {
+            // evitar contar dos veces
+            if(!data->object->destroy)
+            {
+                data->object->destroy = true;
+
+                coins++;
+
+                std::cout << "coins = " << coins << "\n";
+            }
+        }
     else if (data->type == FixtureDataType::Object &&
     data->object->tag == "enemy")
     {
