@@ -44,7 +44,12 @@ private:
 
     Animation runAnimation{};
     sf::Texture textureToDraw{};
+    
     sf::Sound jumpSound{};
+    sf::Sound coinSound{};
+    sf::Sound stompSound{};
+    sf::Sound winSound{};
+    sf::Sound loseSound{};
 
     FixtureData fixtureData{};
     b2Body* body{};

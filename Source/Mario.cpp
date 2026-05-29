@@ -28,6 +28,18 @@ void Mario::Begin()
     jumpSound.setBuffer(Resources::sounds["jump.wav"]);
     jumpSound.setVolume(30);
 
+    coinSound.setBuffer(Resources::sounds["coin.wav"]);
+    coinSound.setVolume(40);
+
+    stompSound.setBuffer(Resources::sounds["stomp.wav"]);
+    stompSound.setVolume(40);
+
+    winSound.setBuffer(Resources::sounds["sclear.wav"]);
+    winSound.setVolume(50);
+
+    loseSound.setBuffer(Resources::sounds["gover.wav"]);
+    loseSound.setVolume(50);
+
     fixtureData.listener = this;
     fixtureData.mario = this;
     fixtureData.type = FixtureDataType::Mario;
@@ -183,6 +195,7 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
                 data->object->destroy = true;
 
                 coins++;
+                coinSound.play();
 
                 std::cout << "coins = " << coins << "\n";
             }
@@ -198,6 +211,7 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
             if(self == groundFixture)
             {
                 enemy->Die();
+                stompSound.play();
 
                 // rebote clásico Mario
                 b2Vec2 velocity = body->GetLinearVelocity();
@@ -219,6 +233,7 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
         if(!pendingWin && !won)
         {
             pendingWin = true;
+            winSound.play();
         }
     }
 }
@@ -275,6 +290,7 @@ void Mario::LoseLife()
     if(lives <= 0)
     {
         dead = true;
+        loseSound.play();
     }
 }
 
