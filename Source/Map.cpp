@@ -86,7 +86,7 @@ sf::Vector2f Map::CreateFromImage(const sf::Image& image, std::vector<Object*>& 
             // bloque pregunta
             else if (color == orange)
             {
-                grid[x][y] = &Resources::textures["bamarillo.png"];
+                grid[x][y] = &Resources::textures["bamarillo.jpeg"];
             }
 
             // tubo

@@ -27,7 +27,7 @@ void Begin(const sf::Window& window)
     for(auto&file : std::filesystem::directory_iterator("./resource/textures/"))
     {
         if (file.is_regular_file() && (file.path().extension() == ".png"
-                || file.path().extension() == ".jpg"))
+                || file.path().extension() == ".jpeg"))
         {
             Resources::textures[file.path().filename().string()]
                 .loadFromFile(file.path().string());

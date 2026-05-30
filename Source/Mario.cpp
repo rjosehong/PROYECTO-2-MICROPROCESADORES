@@ -22,7 +22,7 @@ void Mario::Begin()
     {
         AnimFrame(0.30f, Resources::textures["run3.png"]),
         AnimFrame(0.15f, Resources::textures["run2.png"]),
-        AnimFrame(0.0f, Resources::textures["run1 (2).png"]),
+        AnimFrame(0.0f, Resources::textures["run1.png"]),
     });
 
     jumpSound.setBuffer(Resources::sounds["jump.wav"]);
@@ -151,7 +151,7 @@ void Mario::Update(float deltaTime)
     }
     else 
     {
-        textureToDraw = Resources::textures["bmario.png"];
+        textureToDraw = Resources::textures["BMario.png"];
     }
 
     if(!onGround)
