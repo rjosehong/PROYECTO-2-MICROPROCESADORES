@@ -1,3 +1,20 @@
+// =====================================
+// GAME.CPP
+// =====================================
+//
+// Control principal del juego.
+//
+// Este archivo gestiona:
+//
+// - carga de recursos
+// - carga del mapa
+// - actualización global
+// - renderizado
+// - UI
+// - reinicio de nivel
+// - destrucción segura de objetos
+//
+// =====================================
 #include "Game.h"
 #include "Resources.h"
 #include "Map.h"
@@ -11,19 +28,31 @@
 #include <box2d/b2_world.h>
 #include "Flag.h"
 
+// Mapa actual del juego.
 Map map(1.0f);
+// Cámara principal.
 Camera camera (20.0f);
+// Instancia única del jugador.
 Mario mario{};
+//Lista global de objetos dinámicos
 std::vector<Object*> objects{};
 
+// Música de fondo.
 sf::Music music{};
 
+// Fuente utilizada por la UI.
 sf::Font font{};
+// Texto para mostrar monedas.
 sf::Text coinsText("Monedas", font);
+// Texto para mostrar vidas.
 sf::Text livesText("Lives", font);
 
+// =====================================
+// INICIALIZACIÓN DEL JUEGO
+// =====================================
 void Begin(const sf::Window& window)
 {
+    // Cargar automáticamente todas las texturas.
     for(auto&file : std::filesystem::directory_iterator("./resource/textures/"))
     {
         if (file.is_regular_file() && (file.path().extension() == ".png"
@@ -34,6 +63,7 @@ void Begin(const sf::Window& window)
         }
     }
 
+    // Cargar automáticamente todos los sonidos.
     for(auto&file : std::filesystem::directory_iterator("./resource/sounds/"))
     {
         if (file.is_regular_file() && (file.path().extension() == ".ogg"
@@ -45,11 +75,12 @@ void Begin(const sf::Window& window)
     }
 
     
-
+    // Configuración de música de fondo.
     music.openFromFile("./resource/sounds/music.ogg");
     music.setLoop(true);
     music.setVolume(35);
 
+    // Configuración de textos UI.
     font.loadFromFile("./resource/fonts/SuperMarioBros.ttf");
     coinsText.setFillColor(sf::Color::White);
     coinsText.setOutlineColor(sf::Color::Black);
@@ -61,14 +92,18 @@ void Begin(const sf::Window& window)
     livesText.setOutlineThickness(1.0f);
     livesText.setScale(0.1f,0.1f);
 
+    // Inicializar Box2D.
     Physics::Init();
 
+    // Construir mapa desde imagen.
     sf::Image image{};
     image.loadFromFile("./resource/textures/map (1).png");
     mario.position = map.CreateFromImage(image, objects);
     mario.spawnPosition = mario.position;
 
+    // Inicializar jugador.
     mario.Begin();
+    // Inicializar todos los objetos creados por el mapa.
     for(auto& object : objects)
     {
         object->Begin();
@@ -80,8 +115,13 @@ void Begin(const sf::Window& window)
     
 }
 
+// =====================================
+// ACTUALIZACIÓN GLOBAL
+// =====================================
 void Update(float deltaTime)
 {
+    // El juego se pausa automáticamente
+    // durante victoria o derrota.
     bool paused = mario.IsDead() || mario.HasWon();
 
     // física solo si no está pausado
@@ -104,7 +144,15 @@ void Update(float deltaTime)
         }
     }
 
-    // destrucción segura
+    // =====================================
+    // DESTRUCCIÓN SEGURA
+    // =====================================
+    //
+    // Primero destruimos física.
+    // Luego eliminamos memoria.
+    //
+    // Esto evita crashes de Box2D.
+    // =====================================
     for(auto it = objects.begin(); it != objects.end(); )
     {
         Object* object = *it;
@@ -140,22 +188,31 @@ void Update(float deltaTime)
     }
 }
 
+// =====================================
+// RENDER DEL MUNDO
+// =====================================
 void Render (Renderer& renderer)
 {
-
+    // Dibujar fondo.
     renderer.Draw (Resources::textures["background.png"], camera.position, camera.GetViewSize());
     map.Draw(renderer);
     mario.Draw(renderer);
 
+    // Dibujar objetos dinámicos.
     for(auto& object : objects)
     {
         object->Render(renderer);
     }
+    // Dibujar colisiones de depuración.
     Physics::DebugDraw(renderer);
 }
 
+// =====================================
+// INTERFAZ DE USUARIO
+// =====================================
 void RenderUI(Renderer& renderer)
 {
+    // Mostrar cantidad de monedas.
     coinsText.setPosition(
         -camera.GetViewSize() / 2.0f + sf::Vector2f(2.0f, 1.0f)
     );
@@ -166,6 +223,7 @@ void RenderUI(Renderer& renderer)
 
     renderer.target.draw(coinsText);
 
+    // Mostrar vidas restantes.
     livesText.setPosition(
         -camera.GetViewSize() / 2.0f + sf::Vector2f(2.0f, 3.0f)
     );
@@ -239,6 +297,7 @@ void RenderUI(Renderer& renderer)
     }
 }
 
+// Eliminación directa de objetos.
 void DeleteObject(Object* object)
 {
     const auto& it = std::find(objects.begin(), objects.end(), object);
@@ -249,6 +308,9 @@ void DeleteObject(Object* object)
     }
 } 
 
+// =====================================
+// REINICIO COMPLETO DEL NIVEL
+// =====================================
 void RestartGame(const sf::Window& window)
 {
     // =========================
@@ -274,6 +336,7 @@ void RestartGame(const sf::Window& window)
         delete object;
     }
 
+    // Vaciar lista global.
     objects.clear();
 
     // =========================

@@ -1,18 +1,22 @@
 #include "Instructions.h"
-
+// =====================================
+// PANTALLA DE INSTRUCCIONES
+// =====================================
+// Cargar recursos visuales.
 Instructions::Instructions(float width, float height) {
     if(!font.loadFromFile("./resource/fonts/NintendoDS.ttf")) {
         cout << "No hay font\n";
     }
     
+    // Cargar imagen tecla A.
     if(!aTexture.loadFromFile("./resource/textures/a_key.png")) {
         cout << "No está la imagen de a_key\n";
     }
-
+    // Cargar imagen tecla D.
     if(!dTexture.loadFromFile("./resource/textures/d_key.png")) {
         cout << "No está la imagen de d_key\n";
     }
-
+    // Cargar imagen tecla SPACE.
     if(!spaceTexture.loadFromFile("./resource/textures/space_key.png")) {
         cout << "No está la imagen de space_key\n";
     }

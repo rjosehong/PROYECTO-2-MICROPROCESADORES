@@ -4,15 +4,22 @@
 using namespace std;
 using namespace sf;
 
+// Número total de opciones disponibles.
 #define max_main_menu 5
+
+/// Clase encargada de mostrar
+/// y controlar el menú principal.
 class MainMenu {
+    /// Inicializa todos los elementos visuales.
     public:
         MainMenu(float width, float height);
         ~MainMenu();
+        /// Dibuja el menú completo.
         void draw(RenderWindow& window);
         void MoveUp();
         void MoveDown();
-
+        
+        /// Devuelve la opción seleccionada.
         int MainMenuPressed() {
             return MainMenuSelected;
         }

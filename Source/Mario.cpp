@@ -15,9 +15,12 @@ constexpr float PI = 22.0f / 7.0f;
 
 const float movementSpeed = 7.0f;
 const float jumpVelocity = 11.0f;
-
+// =========================
+// INICIALIZACIÓN DE MARIO
+// =========================
 void Mario::Begin()
 {
+    // Configuración de animación de carrera.
     runAnimation = Animation(0.45f,
     {
         AnimFrame(0.30f, Resources::textures["run3.png"]),
@@ -25,6 +28,7 @@ void Mario::Begin()
         AnimFrame(0.0f, Resources::textures["run1.png"]),
     });
 
+    // Carga de efectos de sonido.
     jumpSound.setBuffer(Resources::sounds["jump.wav"]);
     jumpSound.setVolume(30);
 
@@ -40,10 +44,13 @@ void Mario::Begin()
     loseSound.setBuffer(Resources::sounds["gover.wav"]);
     loseSound.setVolume(50);
 
+    // Información utilizada por Box2D
+    // para identificar a Mario durante colisiones.
     fixtureData.listener = this;
     fixtureData.mario = this;
     fixtureData.type = FixtureDataType::Mario;
 
+    // Creación del cuerpo físico principal.
     b2BodyDef bodyDef{};
     bodyDef.type = b2_dynamicBody;
     bodyDef.position.Set(position.x, position.y);
@@ -55,6 +62,8 @@ void Mario::Begin()
     fixtureDef.density = 1.0f;
     fixtureDef.friction = 0.0f;
 
+    // Colisiones redondeadas para mejorar
+    // el movimiento sobre superficies.
     b2CircleShape circleShape{};
     circleShape.m_radius = 0.5f;
     circleShape.m_p.Set(0.0f, -0.5f);
@@ -69,6 +78,8 @@ void Mario::Begin()
     fixtureDef.shape = &polygonShape;
     body->CreateFixture(&fixtureDef);
 
+    // Sensor inferior utilizado para detectar
+    // cuándo Mario está tocando el suelo.
     polygonShape.SetAsBox(0.4f, 0.2f, b2Vec2(0.0f, 1.0f), 0.0f);
     fixtureDef.isSensor = true;
     groundFixture = body->CreateFixture(&fixtureDef);
@@ -76,13 +87,18 @@ void Mario::Begin()
     
 }
 
+// =========================
+// ACTUALIZACIÓN DE MARIO
+// =========================
 void Mario::Update(float deltaTime)
 {
+    // No actualizar si el jugador ya perdió.
     if(dead)
     {
         return;
     }
 
+    // Procesar victoria pendiente.
     if(pendingWin)
     {
         won = true;
@@ -93,6 +109,7 @@ void Mario::Update(float deltaTime)
         return;
     }
 
+    // Reubicar a Mario en el punto de respawn.
     if(pendingRespawn)
     {
         body->SetTransform(
@@ -103,6 +120,8 @@ void Mario::Update(float deltaTime)
 
         pendingRespawn = false;
     }
+
+    // Control de invencibilidad temporal.
     if(invincible)
     {
     invincibleTimer -= deltaTime;
@@ -117,6 +136,7 @@ void Mario::Update(float deltaTime)
 
     runAnimation.Update(deltaTime);
 
+    // Lectura de entrada del jugador.
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
     {
         move *= 2;
@@ -159,8 +179,10 @@ void Mario::Update(float deltaTime)
         textureToDraw = Resources::textures["jump.png"];
     }
 
+    // Aplicar velocidad calculada al cuerpo físico.
     body->SetLinearVelocity(velocity);
 
+    // Sincronizar posición lógica con Box2D.
     position = sf::Vector2f(body->GetPosition().x, body->GetPosition().y);
     angle = body->GetAngle() *(180.0f /PI);
      
@@ -173,6 +195,9 @@ void Mario::Draw(Renderer& renderer)
         sf::Vector2f(facingLeft ? -1.0f : 1.0f, 2.0f), angle);
 }
 
+// =========================
+// DETECCIÓN DE COLISIONES
+// =========================
 void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
 {
     FixtureData* data = (FixtureData*)other->GetUserData().pointer;
@@ -182,10 +207,13 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
         return;
     }
 
+    // Detección de suelo.
     if(groundFixture == self && data->type == FixtureDataType::MapTile)
     {
         onGround++;
     }
+
+    // Recolección de monedas.
     else if (data->type == FixtureDataType::Object &&
          data->object->tag == "coin")
         {
@@ -200,6 +228,8 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
                 std::cout << "coins = " << coins << "\n";
             }
         }
+
+    // Interacción con enemigos.    
     else if (data->type == FixtureDataType::Object &&
     data->object->tag == "enemy")
     {
@@ -210,6 +240,7 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
             // si fue con el sensor de pies -> matar enemigo
             if(self == groundFixture)
             {
+                // Mario aplasta al enemigo desde arriba.
                 enemy->Die();
                 stompSound.play();
 
@@ -226,6 +257,7 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
         }
     }
 
+    // Activación de victoria.
    else if (data->type == FixtureDataType::Object &&
          data->object->tag == "flag")
     {
@@ -238,12 +270,15 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
     }
 }
 
+// =========================
+// FIN DE COLISIÓN
+// =========================
 void Mario::OnEndContact(b2Fixture* self, b2Fixture* other)
 {
     FixtureData* data = (FixtureData*)other->GetUserData().pointer;
 
     if(groundFixture == self && data->type == FixtureDataType::MapTile && onGround>0)
-    {    
+    {   // Mario deja de tocar una superficie. 
         onGround--;
     }
    
@@ -268,6 +303,9 @@ bool Mario::HasWon()
     return won;
 }
 
+// =========================
+// PÉRDIDA DE VIDA
+// =========================
 void Mario::LoseLife()
 {
     if(invincible)
@@ -280,22 +318,28 @@ void Mario::LoseLife()
     }
 
     lives--;
+    // Evitar daño múltiple inmediato.
     invincible = true;
     invincibleTimer = 2.0f;
 
     std::cout << "Lives: " << lives << "\n";
-
+    // Programar respawn seguro.
     pendingRespawn = true;
 
     if(lives <= 0)
     {
+        // Activar estado de Game Over.
         dead = true;
         loseSound.play();
     }
 }
 
+// =========================
+// REINICIO DE MARIO
+// =========================
 void Mario::Reset()
 {
+    // Restaurar estado inicial del jugador.
     coins = 0;
     lives = 3;
 

@@ -1,10 +1,16 @@
 #include "Menu.h"
 
+// =====================================
+// MENÚ PRINCIPAL
+// =====================================
+// Crear todos los elementos visuales.
 MainMenu::MainMenu(float width, float height) {
+    // Cargar tipografía.
     if(!font.loadFromFile("./resource/fonts/SuperMarioBros.ttf")) {
         cout << "No hay font\n";
     }
 
+    // Cargar imagen de fondo.
     if(!backgroundTexture.loadFromFile("./resource/textures/menubackground.png")) {
         std::cout << "No hay fondo para el menú\n";
     }

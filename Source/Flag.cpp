@@ -6,6 +6,7 @@
 #include <box2d/b2_world.h>
 #include <box2d/b2_fixture.h>
 
+/// Inicialización de la bandera.
 void Flag::Begin()
 {
     tag = "flag";
@@ -18,6 +19,7 @@ void Flag::Begin()
 
     body = Physics::world.CreateBody(&bodyDef);
 
+    // Sensor vertical.
     b2PolygonShape shape{};
     shape.SetAsBox(0.5f, 5.0f);
 
@@ -29,15 +31,26 @@ void Flag::Begin()
     body->CreateFixture(&fixtureDef);
 }
 
+/// Dibujo de la bandera.
 void Flag::Render(Renderer& renderer)
 {
     renderer.Draw(
         Resources::textures["bandera.png"],
-        sf::Vector2f(position.x, position.y - 4.5f),
-        sf::Vector2f(1.5f, 10.0f)
+
+        // Se desplaza hacia arriba para alinearse con el poste.
+        sf::Vector2f(
+            position.x,
+            position.y - 4.5f
+        ),
+
+        sf::Vector2f(
+            1.5f,
+            10.0f
+        )
     );
 }
 
+/// Destruye el body físico.
 void Flag::DestroyPhysics()
 {
     if(body)

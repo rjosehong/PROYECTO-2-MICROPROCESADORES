@@ -4,10 +4,13 @@
 using namespace std;
 using namespace sf;
 
+/// Pantalla que explica los controles.
 class Instructions {
+    /// Inicializa imágenes y textos.
     public:
     Instructions(float width, float height);
     ~Instructions();
+    /// Dibuja la pantalla de instrucciones.
     void draw(RenderWindow& window);
 
     private:
