@@ -27,6 +27,7 @@
 #include "Enemy.h"
 #include <box2d/b2_world.h>
 #include "Flag.h"
+#include "ScoreManager.h"
 
 // Mapa actual del juego.
 Map map(1.0f);
@@ -46,6 +47,8 @@ sf::Font font{};
 sf::Text coinsText("Monedas", font);
 // Texto para mostrar vidas.
 sf::Text livesText("Lives", font);
+/// Texto utilizado para mostrar el score actual.
+sf::Text scoreText("Score", font);
 
 // =====================================
 // INICIALIZACIÓN DEL JUEGO
@@ -92,6 +95,15 @@ void Begin(const sf::Window& window)
     livesText.setOutlineThickness(1.0f);
     livesText.setScale(0.1f,0.1f);
 
+    //Configuración texto score
+    scoreText.setFillColor(sf::Color::White);
+    scoreText.setOutlineColor(sf::Color::Black);
+    scoreText.setOutlineThickness(1.0f);
+
+    scoreText.setScale(0.1f,0.1f);
+
+    // Comenzar siempre con score en cero.
+    ScoreManager::ResetCurrentScore();
     // Inicializar Box2D.
     Physics::Init();
 
@@ -234,6 +246,21 @@ void RenderUI(Renderer& renderer)
 
     renderer.target.draw(livesText);
 
+    // Mostrar score
+    scoreText.setPosition(
+        -camera.GetViewSize() / 2.0f +
+        sf::Vector2f(2.0f, 5.5f)
+    );
+
+    scoreText.setString(
+        "Score: " +
+        std::to_string(
+            ScoreManager::currentScore
+        )
+    );
+
+    renderer.target.draw(scoreText);
+
     // =========================
     // GAME OVER
     // =========================
@@ -353,7 +380,8 @@ void RestartGame(const sf::Window& window)
     // =========================
     // RESET MARIO
     // =========================
-
+    // Reiniciar score para nueva partida.
+    ScoreManager::ResetCurrentScore();
     mario.Reset();
 
     // =========================
@@ -363,6 +391,40 @@ void RestartGame(const sf::Window& window)
     for(auto& object : objects)
     {
         object->Begin();
+    }
+}
+
+void RenderScores(sf::RenderWindow& window)
+{
+    std::vector<int> scores =
+        ScoreManager::LoadScores();
+
+    sf::Text title("TOP SCORES", font);
+
+    title.setCharacterSize(50);
+    title.setPosition(350,50);
+
+    window.draw(title);
+
+    for(size_t i = 0;
+        i < scores.size() && i < 10;
+        i++)
+    {
+        sf::Text scoreText(
+            std::to_string(i + 1)
+            + ". "
+            + std::to_string(scores[i]),
+            font
+        );
+
+        scoreText.setCharacterSize(40);
+
+        scoreText.setPosition(
+            350,
+            150 + i * 60
+        );
+
+        window.draw(scoreText);
     }
 }
 

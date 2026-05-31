@@ -42,6 +42,9 @@ void RenderUI(Renderer& renderer);
 /// Elimina un objeto del juego.
 void DeleteObject(Object* object);
 
+/// Muestra la pantalla de puntuaciones.
+void RenderScores(sf::RenderWindow& window);
+
 /// Reinicia completamente el nivel actual.
 void RestartGame(const sf::Window& window);
 /// Indica si el jugador perdió.

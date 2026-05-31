@@ -140,12 +140,13 @@ int main()
                 }
             }
 
-            //Pantalla de Scores
+            // Pantalla de Scores
             else if (state == GameState::SCORES)
             {
                 if (event.type == sf::Event::KeyPressed &&
-                    event.key.code == sf::Keyboard::Escape) {
-
+                    event.key.code == sf::Keyboard::Escape)
+                {
+                    // Regresar al menú.
                     state = GameState::MENU;
                 }
             }
@@ -181,6 +182,12 @@ int main()
         {
             window.setView(window.getDefaultView());
             instructions.draw(window);
+        }
+        else if (state == GameState::SCORES)
+        {
+            window.setView(window.getDefaultView());
+
+            RenderScores(window);
         }
         if(state == GameState::PLAYING)
         {

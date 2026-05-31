@@ -4,6 +4,7 @@
 #include "Object.h"
 #include "Game.h"
 #include "Enemy.h"
+#include "ScoreManager.h"
 #include <iostream>
 #include <box2d/b2_world.h>
 #include <box2d/b2_polygon_shape.h>
@@ -223,6 +224,8 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
                 data->object->destroy = true;
 
                 coins++;
+                // Moneda recogida = 100 puntos.
+                ScoreManager::AddScore(100);
                 coinSound.play();
 
                 std::cout << "coins = " << coins << "\n";
@@ -243,6 +246,8 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
                 // Mario aplasta al enemigo desde arriba.
                 enemy->Die();
                 stompSound.play();
+                // Enemigo eliminado = 200 puntos.
+                ScoreManager::AddScore(200);
 
                 // rebote clásico Mario
                 b2Vec2 velocity = body->GetLinearVelocity();
@@ -264,7 +269,14 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
         // evitar múltiples triggers
         if(!pendingWin && !won)
         {
+            // Bonus por completar nivel.
+            ScoreManager::AddScore(1000);
+
+            // Guardar score final.
+            ScoreManager::SaveCurrentScore();
+
             pendingWin = true;
+
             winSound.play();
         }
     }
@@ -328,8 +340,12 @@ void Mario::LoseLife()
 
     if(lives <= 0)
     {
-        // Activar estado de Game Over.
+        // Activar Game Over.
         dead = true;
+
+        // Guardar score obtenido.
+        ScoreManager::SaveCurrentScore();
+
         loseSound.play();
     }
 }
