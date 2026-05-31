@@ -1,18 +1,41 @@
 #include "Renderer.h"
 #include <vector>
 
-Renderer::Renderer(sf::RenderTarget& target) : target(target)
+/// Constructor.
+Renderer::Renderer(sf::RenderTarget& target)
+    : target(target)
 {
 }
 
-void Renderer::Draw(const sf::Texture& texture, const sf::Vector2f& position, 
-    const sf::Vector2f& size,float angle)
+/// Dibuja una textura escalada y rotada.
+void Renderer::Draw(
+    const sf::Texture& texture,
+    const sf::Vector2f& position,
+    const sf::Vector2f& size,
+    float angle)
 {
+    // Asigna textura.
     sprite.setTexture(texture, true);
-    sprite.setOrigin((sf::Vector2f)texture.getSize() / 2.0f);
+
+    // Centra origen.
+    sprite.setOrigin(
+        (sf::Vector2f)texture.getSize() / 2.0f
+    );
+
+    // Posiciona sprite.
     sprite.setPosition(position);
-    sprite.setScale(sf::Vector2f(size.x / texture.getSize().x,
-         size.y / texture.getSize().y));
+
+    // Escala sprite.
+    sprite.setScale(
+        sf::Vector2f(
+            size.x / texture.getSize().x,
+            size.y / texture.getSize().y
+        )
+    );
+
+    // Rotación.
     sprite.setRotation(angle);
+
+    // Render.
     target.draw(sprite);
 }
