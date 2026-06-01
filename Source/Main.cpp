@@ -90,26 +90,43 @@ int main()
 
                         int selected = menu.MainMenuPressed();
 
-                        if (selected == 0) {
-                            state = GameState::PLAYING;
-                        }
-                        if (selected == 1) {
-                            state = GameState::INSTRUCTIONS;
-                        }
-                        if (selected == 2) {
-                            state = GameState::SCORES;
-                        }
-                        if (selected == 3) {
-                            RestartGame(window);
-                            state = GameState::PLAYING;
-                        }
+                        if (selected == 0)
+                            {
+                                 SetPlayerMode(1);
 
-                        if (selected == 4) {
-                            window.close();
+                                    RestartGame(window);
+
+                                    state = GameState::PLAYING;
+                            }
+                        else if (selected == 1)
+                            {
+                                SetPlayerMode(2);
+
+                                    RestartGame(window);
+
+                                    state = GameState::PLAYING;
+                            }                           
+                        else if (selected == 2)
+                            {
+                                    state = GameState::INSTRUCTIONS;
+                        }
+                        else if (selected == 3)
+                        {
+                                     state = GameState::SCORES;
+                        }
+                        else if (selected == 4)
+                        {
+                        RestartGame(window);
+
+                                     state = GameState::PLAYING;
+                        }
+                        else if (selected == 5)
+                        {
+                                    window.close();
                         }
                     }
                 }
-            }
+        }
             //Partida Activa
             else if (state == GameState::PLAYING)
             {

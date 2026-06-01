@@ -39,37 +39,43 @@ MainMenu::MainMenu(float width, float height) {
     //Play
     mainMenu[0].setFont(font);
     mainMenu[0].setFillColor(sf::Color::White);
-    mainMenu[0].setString("Play");
+    mainMenu[0].setString("1 Player");
     mainMenu[0].setCharacterSize(55);
     mainMenu[0].setPosition(420,300);
     
-    //Instrucciones
+    //Segundo jugador
     mainMenu[1].setFont(font);
     mainMenu[1].setFillColor(sf::Color::White);
-    mainMenu[1].setString("Instructions");
+    mainMenu[1].setString("2 Players");
     mainMenu[1].setCharacterSize(55);
     mainMenu[1].setPosition(420,380);
 
-    //Pausa
+    //Instrucciones
     mainMenu[2].setFont(font);
     mainMenu[2].setFillColor(sf::Color::White);
-    mainMenu[2].setString("Scores");
+    mainMenu[2].setString("Instrucciones");
     mainMenu[2].setCharacterSize(55);
     mainMenu[2].setPosition(420,460);
-
-    //Restart
+    //Pausa
     mainMenu[3].setFont(font);
     mainMenu[3].setFillColor(sf::Color::White);
-    mainMenu[3].setString("Restart");
+    mainMenu[3].setString("Scores");
     mainMenu[3].setCharacterSize(55);
     mainMenu[3].setPosition(420,540);
 
-    //Exit
+    //Restart
     mainMenu[4].setFont(font);
     mainMenu[4].setFillColor(sf::Color::White);
-    mainMenu[4].setString("Exit");
+    mainMenu[4].setString("Restart");
     mainMenu[4].setCharacterSize(55);
     mainMenu[4].setPosition(420,620);
+
+    //Exit
+    mainMenu[5].setFont(font);
+    mainMenu[5].setFillColor(sf::Color::White);
+    mainMenu[5].setString("Exit");
+    mainMenu[5].setCharacterSize(55);
+    mainMenu[5].setPosition(420,700);
 
     MainMenuSelected = -1;
 }

@@ -51,3 +51,7 @@ void RestartGame(const sf::Window& window);
 bool IsGameOver();
 /// Indica si el jugador ganó el nivel.
 bool HasPlayerWon();
+/// Configura el modo de juego (1 o 2 jugadores).
+void SetPlayerMode(int players);
+int GetCurrentPlayer();
+bool IsTwoPlayerMode();

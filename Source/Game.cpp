@@ -29,18 +29,22 @@
 #include "Enemy.h"
 #include <box2d/b2_world.h>
 #include "Flag.h"
-#include "ScoreManager.h"
 #include <mutex>
 #include "EnemyThread.h"
 #include "CoinStatsThread.h"
+#include <algorithm> // Necesario para std::find
 
 // Mapa actual del juego.
 Map map(1.0f);
 // Cámara principal.
-Camera camera (20.0f);
+Camera camera(20.0f);
 // Instancia única del jugador.
 Mario mario{};
-//Lista global de objetos dinámicos
+
+// Modo de juego actual (1 o 2 jugadores).
+int totalPlayers = 1;
+int currentPlayer = 1;
+// Lista global de objetos dinámicos
 std::vector<Object*> objects{};
 std::mutex objectsMutex;
 
@@ -62,10 +66,10 @@ sf::Text scoreText("Score", font);
 void Begin(const sf::Window& window)
 {
     // Cargar automáticamente todas las texturas.
-    for(auto&file : std::filesystem::directory_iterator("./resource/textures/"))
+    for (auto& file : std::filesystem::directory_iterator("./resource/textures/"))
     {
         if (file.is_regular_file() && (file.path().extension() == ".png"
-                || file.path().extension() == ".jpeg"))
+            || file.path().extension() == ".jpeg"))
         {
             Resources::textures[file.path().filename().string()]
                 .loadFromFile(file.path().string());
@@ -73,17 +77,16 @@ void Begin(const sf::Window& window)
     }
 
     // Cargar automáticamente todos los sonidos.
-    for(auto&file : std::filesystem::directory_iterator("./resource/sounds/"))
+    for (auto& file : std::filesystem::directory_iterator("./resource/sounds/"))
     {
         if (file.is_regular_file() && (file.path().extension() == ".ogg"
-                || file.path().extension() == ".wav"))
+            || file.path().extension() == ".wav"))
         {
             Resources::sounds[file.path().filename().string()]
                 .loadFromFile(file.path().string());
         }
     }
 
-    
     // Configuración de música de fondo.
     music.openFromFile("./resource/sounds/music.ogg");
     music.setLoop(true);
@@ -94,19 +97,18 @@ void Begin(const sf::Window& window)
     coinsText.setFillColor(sf::Color::White);
     coinsText.setOutlineColor(sf::Color::Black);
     coinsText.setOutlineThickness(1.0f);
-    coinsText.setScale(0.1f,0.1f);
+    coinsText.setScale(0.1f, 0.1f);
 
     livesText.setFillColor(sf::Color::White);
     livesText.setOutlineColor(sf::Color::Black);
     livesText.setOutlineThickness(1.0f);
-    livesText.setScale(0.1f,0.1f);
+    livesText.setScale(0.1f, 0.1f);
 
-    //Configuración texto score
+    // Configuración texto score
     scoreText.setFillColor(sf::Color::White);
     scoreText.setOutlineColor(sf::Color::Black);
     scoreText.setOutlineThickness(1.0f);
-
-    scoreText.setScale(0.1f,0.1f);
+    scoreText.setScale(0.1f, 0.1f);
 
     // Comenzar siempre con score en cero.
     ScoreManager::ResetCurrentScore();
@@ -122,7 +124,7 @@ void Begin(const sf::Window& window)
     // Inicializar jugador.
     mario.Begin();
     // Inicializar todos los objetos creados por el mapa.
-    for(auto& object : objects)
+    for (auto& object : objects)
     {
         object->Begin();
     }
@@ -131,9 +133,6 @@ void Begin(const sf::Window& window)
     StartScoreThread();
     StartEnemyThread();
     StartCoinStatsThread();
-    
-
-    
 }
 
 // =====================================
@@ -141,12 +140,11 @@ void Begin(const sf::Window& window)
 // =====================================
 void Update(float deltaTime)
 {
-    // El juego se pausa automáticamente
-    // durante victoria o derrota.
+    // El juego se pausa automáticamente durante victoria o derrota.
     bool paused = mario.IsDead() || mario.HasWon();
 
     // física solo si no está pausado
-    if(!paused)
+    if (!paused)
     {
         Physics::Update(deltaTime);
     }
@@ -158,11 +156,10 @@ void Update(float deltaTime)
     NotifyEnemyThread();
 
     // enemigos/objetos solo si no está pausado
-    if(!paused)
+    if (!paused)
     {
         std::lock_guard<std::mutex> updateLock(objectsMutex);
-
-        for(auto& object : objects)
+        for (auto& object : objects)
         {
             object->Update(deltaTime);
         }
@@ -171,31 +168,27 @@ void Update(float deltaTime)
     // =====================================
     // DESTRUCCIÓN SEGURA
     // =====================================
-    //
-    // Primero destruimos física.
-    // Luego eliminamos memoria.
-    //
+    // Primero destruimos física. Luego eliminamos memoria.
     // Esto evita crashes de Box2D.
     // =====================================
     std::lock_guard<std::mutex> destroyLock(objectsMutex);
-    for(auto it = objects.begin(); it != objects.end(); )
+    for (auto it = objects.begin(); it != objects.end(); )
     {
         Object* object = *it;
 
-        if(object->destroy)
+        if (object->destroy)
         {
-            if(!object->physicsDestroyed)
+            if (!object->physicsDestroyed)
             {
-                if(Coin* coin = dynamic_cast<Coin*>(object))
+                if (Coin* coin = dynamic_cast<Coin*>(object))
                 {
                     coin->DestroyPhysics();
                 }
-
-                if(Enemy* enemy = dynamic_cast<Enemy*>(object))
+                else if (Enemy* enemy = dynamic_cast<Enemy*>(object))
                 {
                     enemy->DestroyPhysics();
                 }
-                if(Flag* flag = dynamic_cast<Flag*>(object))
+                else if (Flag* flag = dynamic_cast<Flag*>(object))
                 {
                     flag->DestroyPhysics();
                 }
@@ -216,17 +209,16 @@ void Update(float deltaTime)
 // =====================================
 // RENDER DEL MUNDO
 // =====================================
-void Render (Renderer& renderer)
+void Render(Renderer& renderer)
 {
     // Dibujar fondo.
-    renderer.Draw (Resources::textures["background.png"], camera.position, camera.GetViewSize());
+    renderer.Draw(Resources::textures["background.png"], camera.position, camera.GetViewSize());
     map.Draw(renderer);
     mario.Draw(renderer);
 
     // Dibujar objetos dinámicos.
     std::lock_guard<std::mutex> lock(objectsMutex);
-
-    for(auto& object : objects)
+    for (auto& object : objects)
     {
         object->Render(renderer);
     }
@@ -240,101 +232,75 @@ void Render (Renderer& renderer)
 void RenderUI(Renderer& renderer)
 {
     // Mostrar cantidad de monedas.
-    coinsText.setPosition(
-        -camera.GetViewSize() / 2.0f + sf::Vector2f(2.0f, 1.0f)
-    );
-
-    coinsText.setString(
-        "Coins: " + std::to_string(mario.GetCoins())
-    );
-
+    coinsText.setPosition(-camera.GetViewSize() / 2.0f + sf::Vector2f(2.0f, 1.0f));
+    coinsText.setString("Coins: " + std::to_string(mario.GetCoins()));
     renderer.target.draw(coinsText);
 
     // Mostrar vidas restantes.
-    livesText.setPosition(
-        -camera.GetViewSize() / 2.0f + sf::Vector2f(2.0f, 3.0f)
-    );
-
-    livesText.setString(
-        "Lives: " + std::to_string(mario.GetLives())
-    );
-
+    livesText.setPosition(-camera.GetViewSize() / 2.0f + sf::Vector2f(2.0f, 3.0f));
+    livesText.setString("Lives: " + std::to_string(mario.GetLives()));
     renderer.target.draw(livesText);
 
     // Mostrar score
-    scoreText.setPosition(
-        -camera.GetViewSize() / 2.0f +
-        sf::Vector2f(2.0f, 5.5f)
-    );
-
-    scoreText.setString(
-        "Score: " +
-        std::to_string(
-            ScoreManager::currentScore
-        )
-    );
-
+    scoreText.setPosition(-camera.GetViewSize() / 2.0f + sf::Vector2f(2.0f, 5.5f));
+    scoreText.setString("Score: " + std::to_string(ScoreManager::currentScore));
     renderer.target.draw(scoreText);
+
+    // Texto de Jugador Actual (Player 1 / Player 2)
+    sf::Text playerText;
+    playerText.setFont(font);
+    playerText.setCharacterSize(32);
+    playerText.setScale(0.05f, 0.05f); // Añadido escala para que no se vea gigante en mundos Box2D
+
+    if (currentPlayer == 1)
+        playerText.setString("PLAYER 1");
+    else
+        playerText.setString("PLAYER 2");
+
+    playerText.setPosition(-7.f, -5.f);
+    renderer.target.draw(playerText);
 
     // =========================
     // GAME OVER
     // =========================
-
-    if(mario.IsDead())
+    if (mario.IsDead())
     {
         sf::Text gameOver("GAME OVER", font);
-
         gameOver.setFillColor(sf::Color::Red);
         gameOver.setOutlineColor(sf::Color::Black);
         gameOver.setOutlineThickness(2.0f);
-
         gameOver.setScale(0.14f, 0.14f);
-
         gameOver.setPosition(-6.0f, -2.0f);
-
         renderer.target.draw(gameOver);
 
         sf::Text restart("PRESS ENTER TO PLAY AGAIN", font);
-
         restart.setFillColor(sf::Color::White);
         restart.setOutlineColor(sf::Color::Black);
         restart.setOutlineThickness(1.0f);
-
         restart.setScale(0.05f, 0.05f);
-
         restart.setPosition(-7.0f, 1.5f);
-
         renderer.target.draw(restart);
     }
 
     // =========================
     // YOU WIN
     // =========================
-
-    if(mario.HasWon())
+    if (mario.HasWon())
     {
         sf::Text win("YOU WIN!", font);
-
         win.setFillColor(sf::Color::Yellow);
         win.setOutlineColor(sf::Color::Black);
         win.setOutlineThickness(2.0f);
-
         win.setScale(0.14f, 0.14f);
-
         win.setPosition(-5.0f, -2.0f);
-
         renderer.target.draw(win);
 
         sf::Text restart("PRESS ENTER TO RESTART", font);
-
         restart.setFillColor(sf::Color::White);
         restart.setOutlineColor(sf::Color::Black);
         restart.setOutlineThickness(1.0f);
-
         restart.setScale(0.05f, 0.05f);
-
         restart.setPosition(-7.0f, 1.5f);
-
         renderer.target.draw(restart);
     }
 }
@@ -343,11 +309,9 @@ void RenderUI(Renderer& renderer)
 void DeleteObject(Object* object)
 {
     std::lock_guard<std::mutex> lock(objectsMutex);
+    const auto& it = std::find(objects.begin(), objects.end(), object);
 
-    const auto& it =
-        std::find(objects.begin(), objects.end(), object);
-
-    if(it != objects.end())
+    if (it != objects.end())
     {
         delete *it;
         objects.erase(it);
@@ -359,22 +323,25 @@ void DeleteObject(Object* object)
 // =====================================
 void RestartGame(const sf::Window& window)
 {
+    currentPlayer = 1;
+
+    // Protegemos el vector ya que es limpiado por completo
+    std::lock_guard<std::mutex> lock(objectsMutex);
+
     // =========================
     // BORRAR OBJETOS
     // =========================
-
-    for(Object* object : objects)
+    for (Object* object : objects)
     {
-        if(Coin* coin = dynamic_cast<Coin*>(object))
+        if (Coin* coin = dynamic_cast<Coin*>(object))
         {
             coin->DestroyPhysics();
         }
-
-        if(Enemy* enemy = dynamic_cast<Enemy*>(object))
+        else if (Enemy* enemy = dynamic_cast<Enemy*>(object))
         {
             enemy->DestroyPhysics();
         }
-        if(Flag* flag = dynamic_cast<Flag*>(object))
+        else if (Flag* flag = dynamic_cast<Flag*>(object))
         {
             flag->DestroyPhysics();
         }
@@ -388,9 +355,7 @@ void RestartGame(const sf::Window& window)
     // =========================
     // RECARGAR MAPA
     // =========================
-
     sf::Image image{};
-
     image.loadFromFile("./resource/textures/map (1).png");
 
     mario.position = map.CreateFromImage(image, objects);
@@ -399,15 +364,13 @@ void RestartGame(const sf::Window& window)
     // =========================
     // RESET MARIO
     // =========================
-    // Reiniciar score para nueva partida.
     ScoreManager::ResetCurrentScore();
     mario.Reset();
 
     // =========================
     // RECREAR OBJETOS
     // =========================
-
-    for(auto& object : objects)
+    for (auto& object : objects)
     {
         object->Begin();
     }
@@ -415,44 +378,56 @@ void RestartGame(const sf::Window& window)
 
 void RenderScores(sf::RenderWindow& window)
 {
-    std::vector<int> scores =
-        ScoreManager::LoadScores();
+    std::vector<int> scores = ScoreManager::LoadScores();
 
     sf::Text title("TOP SCORES", font);
-
     title.setCharacterSize(50);
-    title.setPosition(350,50);
-
+    title.setPosition(350, 50);
     window.draw(title);
 
-    for(size_t i = 0;
-        i < scores.size() && i < 10;
-        i++)
+    for (size_t i = 0; i < scores.size() && i < 10; i++)
     {
-        sf::Text scoreText(
-            std::to_string(i + 1)
-            + ". "
-            + std::to_string(scores[i]),
+        sf::Text topScoreText(
+            std::to_string(i + 1) + ". " + std::to_string(scores[i]),
             font
         );
 
-        scoreText.setCharacterSize(40);
-
-        scoreText.setPosition(
-            350,
-            150 + i * 60
-        );
-
-        window.draw(scoreText);
+        topScoreText.setCharacterSize(40);
+        topScoreText.setPosition(350, 150 + i * 60);
+        window.draw(topScoreText);
     }
 }
 
 bool IsGameOver()
 {
-    return mario.IsDead();
-}
+    if (!mario.IsDead())
+        return false;
 
+    if (totalPlayers == 2 && currentPlayer == 1)
+    {
+        currentPlayer = 2;
+        mario.Reset();
+        return false;
+    }
+
+    return true;
+}
 bool HasPlayerWon()
 {
     return mario.HasWon();
+}
+void SetPlayerMode(int players)
+{
+    totalPlayers = players;
+    currentPlayer = 1;
+}
+
+int GetCurrentPlayer()
+{
+    return currentPlayer;
+}
+
+bool IsTwoPlayerMode()
+{
+    return totalPlayers == 2;
 }

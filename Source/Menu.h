@@ -5,7 +5,7 @@ using namespace std;
 using namespace sf;
 
 // Número total de opciones disponibles.
-#define max_main_menu 5
+#define max_main_menu 6
 
 /// Clase encargada de mostrar
 /// y controlar el menú principal.
