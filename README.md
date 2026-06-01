@@ -13,9 +13,11 @@
 
 # Descripción General
 
-Este proyecto consiste en una adaptación del juego clásico Mario Bros desarrollada en C++. El jugador controla a Mario a través de un nivel de plataformas donde debe recolectar monedas, derrotar enemigos y llegar a la bandera final para completar el nivel.
+Este proyecto consiste en una adaptación del juego clásico Mario Bros desarrollada en C++. Los jugadores deben controlar a Mario a través de un nivel de plataformas donde deben recolectar monedas, derrotar enemigos y llegar a la bandera final para completar el nivel y obtener la mayor cantidad de puntos posible.
 
 La implementación utiliza SFML para la interfaz gráfica y Box2D para la simulación física y detección de colisiones. Además, incorpora técnicas de programación concurrente mediante múltiples hilos de ejecución y mecanismos de sincronización.
+
+El proyecto permite jugar en modalidad de un jugador o dos jugadores por turnos. En el modo de dos jugadores, cada participante dispone de una oportunidad para completar el nivel y acumular la mayor puntuación posible antes de ceder el turno al siguiente jugador.
 
 ---
 
@@ -32,6 +34,9 @@ La implementación utiliza SFML para la interfaz gráfica y Box2D para la simula
 * Reinicio de partida.
 * Física y colisiones mediante Box2D.
 * Programación concurrente mediante hilos.
+* Modo de 1 jugador.
+* Modo de 2 jugadores por turnos.
+* Tabla de mejores puntuaciones.
 
 ---
 
@@ -39,7 +44,7 @@ La implementación utiliza SFML para la interfaz gráfica y Box2D para la simula
 
 ## Lenguaje
 
-* C++17
+* C++
 
 ## Librerías
 
@@ -75,13 +80,25 @@ g++ Source/*.cpp -o mario_bros -std=c++17 -pthread -lsfml-graphics -lsfml-window
 
 # Controles
 
-| Tecla  | Acción                                    |
-| ------ | ----------------------------------------- |
-| A      | Mover izquierda                           |
-| D      | Mover derecha                             |
-| SPACE  | Saltar                                    |
-| ENTER  | Reiniciar partida tras victoria o derrota |
-| ESC    | Volver al menú principal                  |
+| Tecla | Acción                                    |
+| ----- | ----------------------------------------- |
+| A     | Mover izquierda                           |
+| D     | Mover derecha                             |
+| SPACE | Saltar                                    |
+| ENTER | Reiniciar partida tras victoria o derrota |
+| ESC   | Volver al menú principal                  |
+
+---
+
+# Modos de Juego
+
+## Modo 1 Jugador
+
+El jugador controla a Mario e intenta completar el nivel obteniendo la mayor cantidad posible de puntos antes de perder todas sus vidas o alcanzar la meta final.
+
+## Modo 2 Jugadores
+
+Los jugadores participan por turnos. Cuando el primer jugador pierde todas sus vidas, el control pasa automáticamente al segundo jugador. Ambos utilizan el mismo escenario y compiten por obtener la mayor puntuación posible.
 
 ---
 
@@ -248,8 +265,11 @@ Source/
 # Autores
 
 Proyecto desarrollado para el curso CC3086 Programación de Microprocesadores.
-Alejandro Rustrian 25512
-Rodrigo Navas 25589
-Marco Antonio Soloj 25701 
+
+Alejandro Rustrian — 25512
+
+Rodrigo Navas — 25589
+
+Marco Antonio Soloj — 25701
 
 Universidad del Valle de Guatemala.
