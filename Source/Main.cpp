@@ -14,7 +14,7 @@
 #include <SFML/Graphics.hpp>
 #include <thread>
 #include <mutex>
-
+#include <semaphore.h>
 #include "Game.h"
 #include "Camera.h"
 #include "Renderer.h"
@@ -25,7 +25,8 @@
 // Mutex utilizado para proteger
 // acceso concurrente entre Update y Render.
 std::mutex gameMutex;
-
+// Semáforo para sincronizar actualización y renderizado.
+sem_t updateSemaphore;
 /// Estados disponibles del juego.
 enum class GameState
 {
@@ -52,7 +53,7 @@ int main()
     Instructions instructions(window.getSize().x, window.getSize().y);
     GameState state = GameState::MENU;
     Begin(window);
-
+    sem_init(&updateSemaphore, 0, 0);
     // =====================================
     // GAME LOOP
     // =====================================
@@ -165,10 +166,16 @@ int main()
         {
             // Ejecutar actualización del juego.
             std::thread updateThread([&]()
-            {
-                std::lock_guard<std::mutex> lock(gameMutex);
-                Update(deltaTime);
-            });
+        {
+          {
+            std::lock_guard<std::mutex> lock(gameMutex);
+            Update(deltaTime);
+         }
+
+            sem_post(&updateSemaphore);
+        });
+
+            sem_wait(&updateSemaphore);
             updateThread.join();
             // Configurar cámara del juego.
             window.setView(camera.GetView(window.getSize()));
@@ -197,5 +204,6 @@ int main()
 
         window.display();
     }
+    sem_destroy(&updateSemaphore);
     return 0;
 }
