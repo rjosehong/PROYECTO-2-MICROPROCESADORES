@@ -107,6 +107,35 @@ void Enemy::Die()
 {
     isDead = true;
 }
+/// =====================================
+/// LÓGICA CONCURRENTE
+/// =====================================
+///
+/// Esta función es ejecutada por el
+/// hilo de enemigos.
+///
+/// NO modifica Box2D.
+///
+/// =====================================
+
+void Enemy::ThreadUpdate()
+{
+    if(isDead)
+    {
+        return;
+    }
+
+    /// IA simple.
+
+    if(movement > 0)
+    {
+        movement = 3.0f;
+    }
+    else
+    {
+        movement = -3.0f;
+    }
+}
 
 /// Destruye body físico.
 void Enemy::DestroyPhysics()

@@ -24,10 +24,15 @@
 #include <SFML/Audio.hpp>
 #include "Object.h"
 #include "Coin.h"
+#include "ScoreManager.h"
+#include "ScoreThread.h"
 #include "Enemy.h"
 #include <box2d/b2_world.h>
 #include "Flag.h"
 #include "ScoreManager.h"
+#include <mutex>
+#include "EnemyThread.h"
+#include "CoinStatsThread.h"
 
 // Mapa actual del juego.
 Map map(1.0f);
@@ -37,6 +42,7 @@ Camera camera (20.0f);
 Mario mario{};
 //Lista global de objetos dinámicos
 std::vector<Object*> objects{};
+std::mutex objectsMutex;
 
 // Música de fondo.
 sf::Music music{};
@@ -122,6 +128,9 @@ void Begin(const sf::Window& window)
     }
 
     music.play();
+    StartScoreThread();
+    StartEnemyThread();
+    StartCoinStatsThread();
     
 
     
@@ -146,10 +155,13 @@ void Update(float deltaTime)
     mario.Update(deltaTime);
 
     camera.position = mario.position;
+    NotifyEnemyThread();
 
     // enemigos/objetos solo si no está pausado
     if(!paused)
     {
+        std::lock_guard<std::mutex> updateLock(objectsMutex);
+
         for(auto& object : objects)
         {
             object->Update(deltaTime);
@@ -165,6 +177,7 @@ void Update(float deltaTime)
     //
     // Esto evita crashes de Box2D.
     // =====================================
+    std::lock_guard<std::mutex> destroyLock(objectsMutex);
     for(auto it = objects.begin(); it != objects.end(); )
     {
         Object* object = *it;
@@ -211,6 +224,8 @@ void Render (Renderer& renderer)
     mario.Draw(renderer);
 
     // Dibujar objetos dinámicos.
+    std::lock_guard<std::mutex> lock(objectsMutex);
+
     for(auto& object : objects)
     {
         object->Render(renderer);
@@ -327,13 +342,17 @@ void RenderUI(Renderer& renderer)
 // Eliminación directa de objetos.
 void DeleteObject(Object* object)
 {
-    const auto& it = std::find(objects.begin(), objects.end(), object);
+    std::lock_guard<std::mutex> lock(objectsMutex);
+
+    const auto& it =
+        std::find(objects.begin(), objects.end(), object);
+
     if(it != objects.end())
     {
         delete *it;
         objects.erase(it);
     }
-} 
+}
 
 // =====================================
 // REINICIO COMPLETO DEL NIVEL

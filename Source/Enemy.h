@@ -19,6 +19,9 @@ public:
 
     /// Elimina el body físico.
     void DestroyPhysics();
+    /// Lógica concurrente ejecutada por
+    /// el hilo de enemigos.
+    void ThreadUpdate();
 
 private:
 

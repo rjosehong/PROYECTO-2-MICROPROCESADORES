@@ -21,6 +21,9 @@
 #include "Menu.h"
 #include "Instructions.h"
 #include "Mario.h"
+#include "ScoreThread.h"
+#include "EnemyThread.h"
+#include "CoinStatsThread.h"
 
 // Mutex utilizado para proteger
 // acceso concurrente entre Update y Render.
@@ -204,6 +207,12 @@ int main()
 
         window.display();
     }
+
+    StopCoinStatsThread();
+    StopEnemyThread();
+    StopScoreThread();
+
     sem_destroy(&updateSemaphore);
+
     return 0;
 }

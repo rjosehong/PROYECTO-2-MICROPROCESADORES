@@ -11,6 +11,10 @@
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
 #include <box2d/b2_circle_shape.h>
+#include "ScoreThread.h"
+#include <thread>
+#include <chrono>
+#include "CoinStatsThread.h"
 
 constexpr float PI = 22.0f / 7.0f;
 
@@ -225,7 +229,13 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
 
                 coins++;
                 // Moneda recogida = 100 puntos.
-                ScoreManager::AddScore(100);
+                {
+                    std::lock_guard<std::mutex> lock(scoreMutex);
+
+                    scoreQueue.push(100);
+                }
+                scoreCV.notify_one();
+                NotifyCoinCollected();
                 coinSound.play();
 
                 std::cout << "coins = " << coins << "\n";
@@ -247,7 +257,12 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
                 enemy->Die();
                 stompSound.play();
                 // Enemigo eliminado = 200 puntos.
-                ScoreManager::AddScore(200);
+                {
+                    std::lock_guard<std::mutex> lock(scoreMutex);
+
+                    scoreQueue.push(200);
+                }
+                scoreCV.notify_one();
 
                 // rebote clásico Mario
                 b2Vec2 velocity = body->GetLinearVelocity();
@@ -270,8 +285,16 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
         if(!pendingWin && !won)
         {
             // Bonus por completar nivel.
-            ScoreManager::AddScore(1000);
+            {
+                std::lock_guard<std::mutex> lock(scoreMutex);
 
+                scoreQueue.push(1000);
+            }
+            scoreCV.notify_one();
+
+            std::this_thread::sleep_for(
+            std::chrono::milliseconds(50)
+        );
             // Guardar score final.
             ScoreManager::SaveCurrentScore();
 
