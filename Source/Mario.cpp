@@ -15,6 +15,7 @@
 #include <thread>
 #include <chrono>
 #include "CoinStatsThread.h"
+#include "Game.h"
 
 constexpr float PI = 22.0f / 7.0f;
 
@@ -296,7 +297,9 @@ void Mario::OnBeginContact(b2Fixture* self,b2Fixture* other)
             std::chrono::milliseconds(50)
         );
             // Guardar score final.
-            ScoreManager::SaveCurrentScore();
+            ScoreManager::SaveCurrentScore(
+                IsTwoPlayerMode() ? 2 : 1
+            );
 
             pendingWin = true;
 
@@ -367,7 +370,9 @@ void Mario::LoseLife()
         dead = true;
 
         // Guardar score obtenido.
-        ScoreManager::SaveCurrentScore();
+        ScoreManager::SaveCurrentScore(
+            IsTwoPlayerMode() ? 2 : 1
+        );
 
         loseSound.play();
     }

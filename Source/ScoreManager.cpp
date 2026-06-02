@@ -28,7 +28,7 @@ void ScoreManager::ResetCurrentScore()
 /// GUARDAR SCORE EN DISCO
 /// =====================================
 /// Se guarda una línea por partida
-void ScoreManager::SaveCurrentScore()
+void ScoreManager::SaveCurrentScore(int gameMode)
 {
     std::ofstream file(
         "./resource/scores.txt",
@@ -37,14 +37,17 @@ void ScoreManager::SaveCurrentScore()
 
     if(file.is_open())
     {
-        file << currentScore << "\n";
+        file << currentScore
+             << " "
+             << gameMode
+             << "\n";
     }
 }
 
 /// =====================================
 /// CARGAR SCORES
 /// =====================================
-std::vector<int> ScoreManager::LoadScores()
+std::vector<int> ScoreManager::LoadScores(int mode)
 {
     std::vector<int> scores;
 
@@ -53,13 +56,16 @@ std::vector<int> ScoreManager::LoadScores()
     );
 
     int score;
+    int storedMode;
 
-    while(file >> score)
+    while (file >> score >> storedMode)
     {
-        scores.push_back(score);
+        if (storedMode == mode)
+        {
+            scores.push_back(score);
+        }
     }
 
-    // Ordenar de mayor a menor.
     std::sort(
         scores.begin(),
         scores.end(),

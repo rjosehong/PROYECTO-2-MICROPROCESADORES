@@ -13,7 +13,6 @@
 class ScoreManager
 {
 public:
-
     /// Score actual de la partida.
     static int currentScore;
 
@@ -25,9 +24,12 @@ public:
     /// Reinicia el score para una nueva partida.
     static void ResetCurrentScore();
 
-    /// Guarda el score actual en disco.
+    //Guarda el score actual en disco
     static void SaveCurrentScore();
 
+    /// Guarda el score actual en disco según el gamemode.
+    static void SaveCurrentScore(int gameMode);
+
     /// Carga todos los scores guardados.
-    static std::vector<int> LoadScores();
+    static std::vector<int> LoadScores(int mode);
 };

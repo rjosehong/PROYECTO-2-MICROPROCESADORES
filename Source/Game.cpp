@@ -378,25 +378,73 @@ void RestartGame(const sf::Window& window)
 
 void RenderScores(sf::RenderWindow& window)
 {
-    std::vector<int> scores = ScoreManager::LoadScores();
+    std::vector<int> singleScores = ScoreManager::LoadScores(1);
+    std::vector<int> multiScores  = ScoreManager::LoadScores(2);
 
     sf::Text title("TOP SCORES", font);
     title.setCharacterSize(50);
-    title.setPosition(350, 50);
+    title.setPosition(420, 30);
     window.draw(title);
 
-    for (size_t i = 0; i < scores.size() && i < 10; i++)
+    // =========================
+    // TABLA 1 JUGADOR
+    // =========================
+    sf::Text singleTitle("1 PLAYER", font);
+    singleTitle.setCharacterSize(40);
+    singleTitle.setPosition(180, 120);
+    window.draw(singleTitle);
+
+    for (size_t i = 0; i < singleScores.size() && i < 10; i++)
     {
-        sf::Text topScoreText(
-            std::to_string(i + 1) + ". " + std::to_string(scores[i]),
+        sf::Text scoreText(
+            std::to_string(i + 1) + ". " +
+            std::to_string(singleScores[i]),
             font
         );
 
-        topScoreText.setCharacterSize(40);
-        topScoreText.setPosition(350, 150 + i * 60);
-        window.draw(topScoreText);
+        scoreText.setCharacterSize(30);
+        scoreText.setPosition(180, 180 + i * 45);
+
+        window.draw(scoreText);
     }
+
+    // =========================
+    // TABLA 2 JUGADORES
+    // =========================
+    sf::Text multiTitle("2 PLAYERS", font);
+    multiTitle.setCharacterSize(40);
+    multiTitle.setPosition(700, 120);
+    window.draw(multiTitle);
+
+    for (size_t i = 0; i < multiScores.size() && i < 10; i++)
+    {
+        sf::Text scoreText(
+            std::to_string(i + 1) + ". " +
+            std::to_string(multiScores[i]),
+            font
+        );
+
+        scoreText.setCharacterSize(30);
+        scoreText.setPosition(700, 180 + i * 45);
+
+        window.draw(scoreText);
+    }
+
+    // =========================
+    // MENSAJE INFERIOR
+    // =========================
+    sf::Text exitText(
+        "PRESS ESC TO RETURN",
+        font
+    );
+
+    exitText.setCharacterSize(25);
+    exitText.setPosition(400, 820);
+
+    window.draw(exitText);
 }
+
+
 
 bool IsGameOver()
 {
